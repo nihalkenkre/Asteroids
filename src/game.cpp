@@ -63,6 +63,9 @@ uint32_t game_small_asteroids_live_count = 0;
 uint32_t game_bullets_current_max_count = 0;
 uint32_t game_bullet_live_count = 0;
 
+float3 game_trigger_output_positions;
+float2 game_trigger_output_scales;
+
 const uint32_t game_LARGE_ASTEROID_BATCH_SIZE = 50;
 const uint32_t game_SMALL_ASTEROID_BATCH_SIZE = 150;
 const uint32_t game_BULLET_BATCH_SIZE = 20;
@@ -122,8 +125,7 @@ AGE_RESULT game_init (struct android_app* p_app)
     game_player_transform_inputs.max_velocity = 0.05f;
 
     game_player_output_position.z = 0.5f;
-    game_player_output_scale = float2 (1, 1);
-
+    game_player_output_scale = float2 (0.1f, 0.1f);
 
     std::random_device rnd_dev;
     generator = std::mt19937 (rnd_dev ());
@@ -136,6 +138,13 @@ AGE_RESULT game_init (struct android_app* p_app)
     game_small_asteroids_forward_speed_rand = std::uniform_real_distribution<> (-0.00025, 0.00025);
 
     game_large_asteroids_output_rotation_rand = std::uniform_real_distribution<> (0, 3.14);
+
+    game_trigger_output_positions.x = 0.7f;
+    game_trigger_output_positions.y = 0.7f;
+    game_trigger_output_positions.z = 0.1f;
+
+    game_trigger_output_scales.x = 0.1f;
+    game_trigger_output_scales.y = 0.1f;
     
     age_result = game_reserve_memory_for_asteroids_bullets ();
     if (age_result != AGE_RESULT::SUCCESS)
@@ -226,7 +235,7 @@ AGE_RESULT game_large_asteroid_add (float3 position)
 
     game_large_asteroids_outputs_positions[game_large_asteroids_live_count] = position;
     game_large_asteroids_outputs_rotations[game_large_asteroids_live_count] = (float)game_large_asteroids_output_rotation_rand (generator);
-    game_large_asteroids_outputs_scales[game_large_asteroids_live_count] = float2 (1, 1);
+    game_large_asteroids_outputs_scales[game_large_asteroids_live_count] = float2 (0.1f, 0.1f);
 
     game_large_asteroids_transform_inputs[game_large_asteroids_live_count].forward_vector = float2 ((float)game_large_asteroids_forward_vector_rand (generator), (float)game_large_asteroids_forward_vector_rand (generator));
     game_large_asteroids_transform_inputs[game_large_asteroids_live_count].forward_speed = (float)game_large_asteroids_forward_speed_rand (generator);
@@ -266,7 +275,7 @@ AGE_RESULT game_small_asteroid_add (float3 position)
 
     game_small_asteroids_outputs_positions[game_small_asteroids_live_count] = position;
     game_small_asteroids_outputs_rotations[game_small_asteroids_live_count] = (float)game_large_asteroids_output_rotation_rand (generator);
-    game_small_asteroids_outputs_scales[game_small_asteroids_live_count] = float2 (0.5f, 0.5f);
+    game_small_asteroids_outputs_scales[game_small_asteroids_live_count] = float2 (0.05f, 0.05f);
 
     game_small_asteroids_transform_inputs[game_small_asteroids_live_count].forward_vector = float2 ((float)game_large_asteroids_forward_vector_rand (generator), (float)game_large_asteroids_forward_vector_rand (generator));
     game_small_asteroids_transform_inputs[game_small_asteroids_live_count].forward_speed = (float)game_small_asteroids_forward_speed_rand (generator);
@@ -512,7 +521,7 @@ AGE_RESULT game_bullet_add ()
 
     game_bullets_outputs_positions[game_bullet_live_count] = game_player_output_position;
     game_bullets_outputs_rotations[game_bullet_live_count] = game_player_output_rotation;
-    game_bullets_outputs_scales[game_bullet_live_count] = float2 (0.5, 0.5);
+    game_bullets_outputs_scales[game_bullet_live_count] = float2 (0.05f, 0.05f);
 
     ++game_bullet_live_count;
 
@@ -1078,7 +1087,9 @@ AGE_RESULT game_update (uint32_t delta_msecs)
         game_bullets_outputs_scales,
         game_bullet_live_count,
         game_bullets_current_max_count,
-        window_aspect_ratio
+        window_aspect_ratio,
+        &game_trigger_output_positions,
+        &game_trigger_output_scales
     );
     if (age_result != AGE_RESULT::SUCCESS)
     {
