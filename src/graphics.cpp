@@ -421,12 +421,12 @@ AGE_RESULT graphics_create_image_buffers (AAssetManager* asset_manager)
     vk_copy_data_to_memory_mapped_ptr (background_image_pixels_size + player_image_pixels_size,
                                        asteroid_image_pixels, asteroid_image_pixels_size,
                                        mapped_memory_ptr);
-    vk_copy_data_to_memory_mapped_ptr (
-            background_image_pixels_size + player_image_pixels_size + asteroid_image_pixels_size,
-            bullet_image_pixels, bullet_image_pixels_size, mapped_memory_ptr);
-    vk_copy_data_to_memory_mapped_ptr (
-            background_image_pixels_size + player_image_pixels_size + asteroid_image_pixels_size +
-            bullet_image_pixels_size,trigger_image_pixels, trigger_image_pixels_size, mapped_memory_ptr );
+	vk_copy_data_to_memory_mapped_ptr (
+		background_image_pixels_size + player_image_pixels_size + asteroid_image_pixels_size,
+		bullet_image_pixels, bullet_image_pixels_size, mapped_memory_ptr);
+	vk_copy_data_to_memory_mapped_ptr (
+		background_image_pixels_size + player_image_pixels_size + asteroid_image_pixels_size +
+		bullet_image_pixels_size, trigger_image_pixels, trigger_image_pixels_size, mapped_memory_ptr);
 
     vkUnmapMemory (device, staging_image_memory);
 
@@ -438,7 +438,7 @@ AGE_RESULT graphics_create_image_buffers (AAssetManager* asset_manager)
             VK_SAMPLE_COUNT_1_BIT,
             VK_IMAGE_TILING_OPTIMAL,
             VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-            4,
+            5,
             images_extents,
             images
     );
@@ -447,7 +447,7 @@ AGE_RESULT graphics_create_image_buffers (AAssetManager* asset_manager)
         goto exit;
     }
 
-    age_result = vk_allocate_bind_image_memory (images, 4, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+    age_result = vk_allocate_bind_image_memory (images, 5, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                                                 &images_memory);
     if (age_result != AGE_RESULT::SUCCESS)
     {
@@ -472,7 +472,7 @@ AGE_RESULT graphics_create_image_buffers (AAssetManager* asset_manager)
     }
 
     age_result = vk_copy_buffer_to_images (staging_image_buffer, images, images_extents,
-                                           buffer_offsets, 4);
+                                           buffer_offsets, 5);
     if (age_result != AGE_RESULT::SUCCESS)
     {
         goto exit;
@@ -480,7 +480,7 @@ AGE_RESULT graphics_create_image_buffers (AAssetManager* asset_manager)
 
     age_result = vk_change_images_layout (
             images,
-            4,
+            5,
             VK_ACCESS_TRANSFER_WRITE_BIT,
             VK_ACCESS_SHADER_READ_BIT,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -497,7 +497,7 @@ AGE_RESULT graphics_create_image_buffers (AAssetManager* asset_manager)
 
     age_result = vk_create_image_views (
             images,
-            4,
+            5,
             VK_IMAGE_VIEW_TYPE_2D,
             VK_FORMAT_R8G8B8A8_UNORM,
             image_views
@@ -898,7 +898,7 @@ AGE_RESULT graphics_create_descriptor_sets_pipeline_layout ()
 		},
 		{
 			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-			6
+			5
 		}
 	};
 
@@ -928,7 +928,7 @@ AGE_RESULT graphics_create_descriptor_sets_pipeline_layout ()
 		{
 			0,
 			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-			6,
+			5,
 			VK_SHADER_STAGE_FRAGMENT_BIT,
 			nullptr
 		}
@@ -950,12 +950,10 @@ AGE_RESULT graphics_create_descriptor_sets_pipeline_layout ()
 		return AGE_RESULT::ERROR_GRAPHICS_CREATE_DESCRIPTOR_SET_LAYOUT;
 	}
 
-	VkDescriptorSetLayoutCreateInfo texture_descriptor_set_layout_create_info =
-			transform_descriptor_set_layout_create_info;
+	VkDescriptorSetLayoutCreateInfo texture_descriptor_set_layout_create_info = transform_descriptor_set_layout_create_info;
 	texture_descriptor_set_layout_create_info.pBindings = descriptor_layout_bindings + 1;
 
-	vk_result = vkCreateDescriptorSetLayout (device, &texture_descriptor_set_layout_create_info,
-			nullptr, &texture_descriptor_set_layout);
+	vk_result = vkCreateDescriptorSetLayout (device, &texture_descriptor_set_layout_create_info, nullptr, &texture_descriptor_set_layout);
 	if (vk_result != VK_SUCCESS)
 	{
 		return AGE_RESULT::ERROR_GRAPHICS_CREATE_DESCRIPTOR_SET_LAYOUT;
@@ -969,8 +967,7 @@ AGE_RESULT graphics_create_descriptor_sets_pipeline_layout ()
 		&transform_descriptor_set_layout
 	};
 
-	vk_result = vkAllocateDescriptorSets (device, &transform_descriptor_set_allocate_info,
-			&transform_descriptor_set);
+	vk_result = vkAllocateDescriptorSets (device, &transform_descriptor_set_allocate_info, &transform_descriptor_set);
 	if (vk_result)
 	{
 		return AGE_RESULT::ERROR_GRAPHICS_ALLOCATE_DESCRIPTOR_SETS;
@@ -995,7 +992,7 @@ AGE_RESULT graphics_create_descriptor_sets_pipeline_layout ()
 		texture_descriptor_set_layout
 	};
 
-	VkDescriptorImageInfo image_infos[6] = {
+	VkDescriptorImageInfo image_infos[5] = {
 		{
 			common_sampler,
 			background_image_view,
@@ -1019,7 +1016,7 @@ AGE_RESULT graphics_create_descriptor_sets_pipeline_layout ()
         {
 		    common_sampler,
 		    trigger_image_view,
-                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
         }
 	};
 
@@ -1029,7 +1026,7 @@ AGE_RESULT graphics_create_descriptor_sets_pipeline_layout ()
 		texture_descriptor_set,
 		0,
 		0,
-		6,
+		5,
 		VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 		image_infos,
 		nullptr,
@@ -1433,50 +1430,50 @@ AGE_RESULT graphics_update_transforms_buffer_data (
 
 	for (uint32_t a = 0; a < game_small_asteroids_live_count; ++a)
 	{
-		std::memcpy ((char *) transforms_aligned_data +
-					 (aligned_size_per_transform * (game_large_asteroids_live_count + a + 2)),
-					 game_small_asteroids_outputs_positions + a, sizeof (float3));
+		std::memcpy ((char*)transforms_aligned_data +
+			(aligned_size_per_transform * (game_large_asteroids_live_count + a + 2)),
+			game_small_asteroids_outputs_positions + a, sizeof (float3));
 	}
 
 	for (uint32_t a = 0; a < game_small_asteroids_live_count; ++a)
 	{
-		std::memcpy ((char *) transforms_aligned_data +
-					 (aligned_size_per_transform * (game_large_asteroids_live_count + a + 2) +
-					  sizeof (float3)), game_small_asteroids_outputs_rotations + a, sizeof (float));
+		std::memcpy ((char*)transforms_aligned_data +
+			(aligned_size_per_transform * (game_large_asteroids_live_count + a + 2) +
+				sizeof (float3)), game_small_asteroids_outputs_rotations + a, sizeof (float));
 	}
 
 	for (uint32_t a = 0; a < game_small_asteroids_live_count; ++a)
 	{
-		std::memcpy ((char *) transforms_aligned_data +
-					 (aligned_size_per_transform * (game_large_asteroids_live_count + a + 2) +
-					  sizeof (float3) + sizeof (float)), game_small_asteroids_outputs_scales + a,
-					 sizeof (float2));
+		std::memcpy ((char*)transforms_aligned_data +
+			(aligned_size_per_transform * (game_large_asteroids_live_count + a + 2) +
+				sizeof (float3) + sizeof (float)), game_small_asteroids_outputs_scales + a,
+			sizeof (float2));
 	}
 
 	for (uint32_t b = 0; b < game_bullet_live_count; ++b)
 	{
-		std::memcpy ((char *) transforms_aligned_data + (aligned_size_per_transform *
-														 (game_large_asteroids_live_count +
-														  game_small_asteroids_live_count + b + 2)),
-					 game_bullets_outputs_positions + b, sizeof (float3));
+		std::memcpy ((char*)transforms_aligned_data + (aligned_size_per_transform *
+			(game_large_asteroids_live_count +
+				game_small_asteroids_live_count + b + 2)),
+			game_bullets_outputs_positions + b, sizeof (float3));
 	}
 
 	for (uint32_t b = 0; b < game_bullet_live_count; ++b)
 	{
-		std::memcpy ((char *) transforms_aligned_data + (aligned_size_per_transform *
-														 (game_large_asteroids_live_count +
-														  game_small_asteroids_live_count + b + 2) +
-														 sizeof (float3)),
-					 game_bullets_outputs_rotations + b, sizeof (float));
+		std::memcpy ((char*)transforms_aligned_data + (aligned_size_per_transform *
+			(game_large_asteroids_live_count +
+				game_small_asteroids_live_count + b + 2) +
+			sizeof (float3)),
+			game_bullets_outputs_rotations + b, sizeof (float));
 	}
 
 	for (uint32_t b = 0; b < game_bullet_live_count; ++b)
 	{
-		std::memcpy ((char *) transforms_aligned_data + (aligned_size_per_transform *
-														 (game_large_asteroids_live_count +
-														  game_small_asteroids_live_count + b + 2) +
-														 sizeof (float3) + sizeof (float)),
-					 game_bullets_outputs_scales + b, sizeof (float2));
+		std::memcpy ((char*)transforms_aligned_data + (aligned_size_per_transform *
+			(game_large_asteroids_live_count +
+				game_small_asteroids_live_count + b + 2) +
+			sizeof (float3) + sizeof (float)),
+			game_bullets_outputs_scales + b, sizeof (float2));
 	}
 
 	float trigger_transform[] = {
@@ -1488,8 +1485,8 @@ AGE_RESULT graphics_update_transforms_buffer_data (
         game_trigger_output_scales->y
 	};
 
-	std::memcpy ((char*) transforms_aligned_data + (aligned_size_per_transform * (game_large_asteroids_live_count +
-	game_small_asteroids_live_count+ game_bullet_live_count + 2)), trigger_transform, sizeof (trigger_transform));
+	std::memcpy ((char*)transforms_aligned_data + (aligned_size_per_transform * (game_large_asteroids_live_count +
+		game_small_asteroids_live_count + game_bullet_live_count + 2)), trigger_transform, sizeof (trigger_transform));
 
 	std::memcpy (transforms_mapped_data, transforms_aligned_data, total_transforms_size);
 
