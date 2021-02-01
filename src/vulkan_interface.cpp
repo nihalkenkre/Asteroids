@@ -108,11 +108,6 @@ AGE_RESULT create_instance ()
 
 	std::vector<const char*> instance_layers;
 
-	if (is_validation_needed) {
-		instance_extensions.push_back (VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-		instance_layers.push_back ("VK_LAYER_KHRONOS_validation");
-	}
-
 	if (is_validation_needed)
 	{
 		instance_extensions.push_back (VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
@@ -592,7 +587,7 @@ AGE_RESULT create_common_sampler ()
 AGE_RESULT vulkan_interface_init (HINSTANCE h_instance, HWND h_wnd)
 {
 #elif __ANDROID__
-AGE_RESULT vulkan_interface_init (struct android_app* p_app)
+AGE_RESULT vulkan_interface_init_from_app (struct android_app* p_app)
 {
 	if (!LoadVulkanSymbols()) {
 		__android_log_write(ANDROID_LOG_ERROR, "Asteroids", "Vulkan not found");
@@ -703,6 +698,116 @@ AGE_RESULT vulkan_interface_init (struct android_app* p_app)
 
 	return age_result;
 }
+
+#ifdef __ANDROID__
+AGE_RESULT vulkan_interface_init_from_window (ANativeWindow* window)
+{
+	AGE_RESULT age_result = AGE_RESULT::SUCCESS;
+
+    if (!LoadVulkanSymbols()) {
+        __android_log_write(ANDROID_LOG_ERROR, "Asteroids", "Vulkan not found");
+        return AGE_RESULT::ERROR_LOADING_SYMBOLS;
+    }
+
+#ifdef _DEBUG
+    is_validation_needed = true;
+#elif DEBUG
+    is_validation_needed = true;
+#else
+    is_validation_needed = false;
+#endif
+
+    age_result = create_instance ();
+    if (age_result != AGE_RESULT::SUCCESS)
+    {
+        return age_result;
+    }
+
+    if (is_validation_needed)
+    {
+        age_result = create_debug_utils_messenger ();
+
+        if (age_result != AGE_RESULT::SUCCESS)
+        {
+            return age_result;
+        }
+    }
+
+    age_result = create_surface (window);
+    if (age_result != AGE_RESULT::SUCCESS)
+    {
+        return age_result;
+    }
+
+    age_result = get_physical_device ();
+    if (age_result != AGE_RESULT::SUCCESS)
+    {
+        return age_result;
+    }
+
+    age_result = check_physical_device_surface_support ();
+    if (age_result != AGE_RESULT::SUCCESS)
+    {
+        return age_result;
+    }
+
+    age_result = get_physical_device_queue_families ();
+    if (age_result != AGE_RESULT::SUCCESS)
+    {
+        return age_result;
+    }
+
+    age_result = get_physical_device_properties ();
+    if (age_result != AGE_RESULT::SUCCESS)
+    {
+        return age_result;
+    }
+
+    age_result = get_physical_device_properties ();
+    if (age_result != AGE_RESULT::SUCCESS)
+    {
+        return age_result;
+    }
+
+    age_result = create_device ();
+    if (age_result != AGE_RESULT::SUCCESS)
+    {
+        return age_result;
+    }
+
+    age_result = create_swapchain ();
+    if (age_result != AGE_RESULT::SUCCESS)
+    {
+        return age_result;
+    }
+
+    age_result = create_swapchain_image_views ();
+    if (age_result != AGE_RESULT::SUCCESS)
+    {
+        return age_result;
+    }
+
+    age_result = get_device_queues ();
+    if (age_result != AGE_RESULT::SUCCESS)
+    {
+        return age_result;
+    }
+
+    age_result = create_graphics_command_pool ();
+    if (age_result != AGE_RESULT::SUCCESS)
+    {
+        return age_result;
+    }
+
+    age_result = create_common_sampler ();
+    if (age_result != AGE_RESULT::SUCCESS)
+    {
+        return age_result;
+    }
+
+	return age_result;
+}
+#endif
 
 void vulkan_interface_shutdown ()
 {

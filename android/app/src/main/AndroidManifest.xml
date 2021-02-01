@@ -8,19 +8,31 @@
         android:label="Asteroids"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true">
-        <activity android:name="android.app.NativeActivity"
+        <activity
+            android:name=".MainActivity"
+            android:theme="@style/AppTheme"
             android:configChanges="screenSize|orientation"
             android:screenOrientation="landscape">
-            <meta-data
-                android:name="android.app.lib_name"
-                android:value="game"/>
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!--<activity
+            android:name="android.app.NativeActivity"
+            android:configChanges="screenSize|orientation"
+            android:screenOrientation="landscape">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="game" />
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>-->
     </application>
 
 </manifest>

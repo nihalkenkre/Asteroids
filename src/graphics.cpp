@@ -456,7 +456,7 @@ AGE_RESULT graphics_create_image_buffers (AAssetManager* asset_manager)
 
     age_result = vk_change_images_layout (
             images,
-            4,
+            5,
             0,
             VK_ACCESS_TRANSFER_WRITE_BIT,
             VK_IMAGE_LAYOUT_UNDEFINED,
@@ -1779,6 +1779,16 @@ void graphics_shutdown ()
 	if (bullet_image_view != VK_NULL_HANDLE)
 	{
 		vkDestroyImageView (device, bullet_image_view, nullptr);
+	}
+
+	if (trigger_image!= VK_NULL_HANDLE)
+	{
+		vkDestroyImage (device, trigger_image, nullptr);
+	}
+
+	if (trigger_image_view != VK_NULL_HANDLE)
+	{
+		vkDestroyImageView (device, trigger_image_view, nullptr);
 	}
 
 	if (images_memory != VK_NULL_HANDLE)

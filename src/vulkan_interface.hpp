@@ -37,7 +37,8 @@ extern VkSampler common_sampler;
 #ifdef WIN32
 AGE_RESULT vulkan_interface_init (HINSTANCE h_instance, HWND h_wnd);
 #elif __ANDROID__
-AGE_RESULT vulkan_interface_init (struct android_app* p_app);
+AGE_RESULT vulkan_interface_init_from_app (struct android_app* p_app);
+AGE_RESULT vulkan_interface_init_from_window (ANativeWindow* window);
 #endif
 void vulkan_interface_shutdown ();
 

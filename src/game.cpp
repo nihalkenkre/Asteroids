@@ -101,7 +101,7 @@ AGE_RESULT game_reserve_memory_for_asteroids_bullets ();
 #ifdef WIN32
 AGE_RESULT game_init (const HINSTANCE h_instance, const HWND h_wnd)
 #elif __ANDROID__
-AGE_RESULT game_init (struct android_app* p_app)
+AGE_RESULT game_init_from_app (struct android_app* p_app)
 #endif
 {
     AGE_RESULT age_result = AGE_RESULT::SUCCESS;
@@ -155,7 +155,7 @@ AGE_RESULT game_init (struct android_app* p_app)
 #ifdef WIN32
     age_result = vulkan_interface_init (h_instance, h_wnd);
 #elif __ANDROID__
-    age_result = vulkan_interface_init (p_app);
+    age_result = vulkan_interface_init_from_app (p_app);
 #endif
     if (age_result != AGE_RESULT::SUCCESS)
     {
@@ -181,6 +181,70 @@ AGE_RESULT game_init (struct android_app* p_app)
 
     return age_result;
 }
+
+#ifdef __ANDROID__
+AGE_RESULT game_init_from_native_window (ANativeWindow* window, AAssetManager* asset_manager)
+{
+    AGE_RESULT age_result = AGE_RESULT::SUCCESS;
+
+    window_width = ANativeWindow_getWidth(window);
+    windows_height = ANativeWindow_getHeight(window);
+
+    window_aspect_ratio = (float)window_width / (float)windows_height;
+
+    game_player_transform_inputs.time_msecs_to_come_to_rest = 500.f;
+    game_player_transform_inputs.forward_vector.x = 0;
+    game_player_transform_inputs.forward_vector.y = 1;
+    game_player_transform_inputs.acceleration = 0.00005f;
+    game_player_transform_inputs.deceleration = -0.000025f;
+    game_player_transform_inputs.rotation_speed = 0.005f;
+    game_player_transform_inputs.max_velocity = 0.05f;
+
+    game_player_output_position.z = 0.5f;
+    game_player_output_scale = float2 (0.1f, 0.1f);
+
+    std::random_device rnd_dev;
+    generator = std::mt19937 (rnd_dev ());
+
+    game_large_asteroids_output_position_x_rand = std::uniform_real_distribution<> (-window_aspect_ratio, window_aspect_ratio);
+    game_large_asteroids_output_position_y_rand = std::uniform_real_distribution<> (-1, 1);
+    game_large_asteroids_forward_speed_rand = std::uniform_real_distribution<> (-0.001, 0.001);
+    game_large_asteroids_rotation_speed_rand = std::uniform_real_distribution<> (-0.01, 0.01);
+    game_large_asteroids_forward_vector_rand = std::uniform_real_distribution<> (-1, 1);
+    game_small_asteroids_forward_speed_rand = std::uniform_real_distribution<> (-0.00025, 0.00025);
+
+    game_large_asteroids_output_rotation_rand = std::uniform_real_distribution<> (0, 3.14);
+
+    game_trigger_output_positions.x = 0.7f;
+    game_trigger_output_positions.y = 0.7f;
+    game_trigger_output_positions.z = 0.1f;
+
+    game_trigger_output_scales.x = 0.1f;
+    game_trigger_output_scales.y = 0.1f;
+
+    age_result = game_reserve_memory_for_asteroids_bullets ();
+    if (age_result != AGE_RESULT::SUCCESS)
+    {
+        return age_result;
+    }
+
+    age_result = vulkan_interface_init_from_window (window);
+    if (age_result != AGE_RESULT::SUCCESS)
+    {
+        return age_result;
+    }
+
+    age_result = graphics_init (
+            asset_manager,
+            game_large_asteroids_current_max_count, game_large_asteroids_live_count,
+            game_small_asteroids_current_max_count, game_small_asteroids_live_count,
+            game_bullets_current_max_count, game_bullet_live_count,
+            window_aspect_ratio
+    );
+
+    return age_result;
+}
+#endif
 
 AGE_RESULT game_reserve_memory_for_asteroids_bullets ()
 {
