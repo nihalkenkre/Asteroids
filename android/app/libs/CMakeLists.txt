@@ -9,7 +9,7 @@ add_library (game SHARED ${SRC_PATH}/game.cpp vulkan_wrapper.cpp main.cpp ${SRC_
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -Wall")
 
-target_include_directories (game PRIVATE ${CMAKE_SOURCE_DIR} ${ANDROID_NDK}/sources/android/native_app_glue ${SRC_PATH}/external/stb ${SRC_PATH})
+target_include_directories (game PRIVATE ${CMAKE_SOURCE_DIR} ${ANDROID_NDK}/sources/android/native_app_glue ${SRC_PATH}/external/stb ${SRC_PATH} ${SRC_PATH}/android)
 
 set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_onCreate")
 

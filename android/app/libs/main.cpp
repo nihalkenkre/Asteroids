@@ -15,8 +15,8 @@
 
 #include "game.hpp"
 #include "log.hpp"
+#include "types.hpp"
 
-const char* TAG = "Asteroids";
 uint32_t tick_rate_msecs = 15;
 
 bool is_game_inited = false;
@@ -170,7 +170,7 @@ AAssetManager* asset_manager = nullptr;
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_ntkinteractive_asteroids_MainActivity_GameInit (JNIEnv *env, jobject thiz, jobject surface, jobject
+Java_com_ntkinteractive_asteroids_VkSurfaceView_GameInit (JNIEnv *env, jobject thiz, jobject surface, jobject
         assetManager)
 {
     AGE_RESULT age_result = AGE_RESULT::SUCCESS;
@@ -184,11 +184,30 @@ Java_com_ntkinteractive_asteroids_MainActivity_GameInit (JNIEnv *env, jobject th
     {
         log_error (age_result);
     }
+
+    /*while (true)
+    {
+        age_result = game_update (33);
+
+        if (age_result != AGE_RESULT::SUCCESS)
+        {
+            log_error (age_result);
+            break;
+        }
+
+        age_result = game_submit_present ();
+
+        if (age_result != AGE_RESULT::SUCCESS)
+        {
+            log_error (age_result);
+            break;
+        }
+    }*/
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_ntkinteractive_asteroids_MainActivity_GameUpdate (JNIEnv *env, jobject thiz)
+Java_com_ntkinteractive_asteroids_VkSurfaceView_GameUpdate (JNIEnv *env, jobject thiz)
 {
     AGE_RESULT age_result = AGE_RESULT::SUCCESS;
 
@@ -201,7 +220,7 @@ Java_com_ntkinteractive_asteroids_MainActivity_GameUpdate (JNIEnv *env, jobject 
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_ntkinteractive_asteroids_MainActivity_GameSubmitPresent (JNIEnv *env, jobject thiz)
+Java_com_ntkinteractive_asteroids_VkSurfaceView_GameSubmitPresent (JNIEnv *env, jobject thiz)
 {
     AGE_RESULT age_result = AGE_RESULT::SUCCESS;
 
@@ -214,7 +233,7 @@ Java_com_ntkinteractive_asteroids_MainActivity_GameSubmitPresent (JNIEnv *env, j
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_ntkinteractive_asteroids_MainActivity_GameShutdown (JNIEnv *env, jobject thiz)
+Java_com_ntkinteractive_asteroids_VkSurfaceView_GameShutdown (JNIEnv *env, jobject thiz)
 {
     game_shutdown ();
 

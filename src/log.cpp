@@ -183,3 +183,15 @@ AGE_RESULT log_error (const AGE_RESULT result)
 
 	return AGE_RESULT::SUCCESS;
 }
+
+#ifdef __ANDROID__
+#include <android/log.h>
+#include "types.hpp"
+
+AGE_RESULT log_verbose (const std::string& info)
+{
+	__android_log_print (ANDROID_LOG_VERBOSE, TAG, "%s", info.c_str());
+
+	return AGE_RESULT::SUCCESS;
+}
+#endif

@@ -2,7 +2,7 @@
 #include "graphics.hpp"
 #include "types.hpp"
 #include "vulkan_interface.hpp"
-
+#include "log.hpp"
 #include "utils.hpp"
 
 #include <cstdlib>
@@ -16,9 +16,9 @@
 #include <android_native_app_glue.h>
 #endif
 
-bool is_w_pressed = false;
+bool is_w_pressed = true;
 bool is_s_pressed = false;
-bool is_d_pressed = false;
+bool is_d_pressed = true;
 bool is_a_pressed = false;
 bool is_space_bar_pressed = false;
 bool is_up_arrow_pressed = false;
@@ -1036,7 +1036,7 @@ AGE_RESULT game_bullets_large_asteroids_collision_checks ()
                     return age_result;
                 }
 
-                for (uint32_t a = 0; a < 3; ++a)
+                for (uint32_t i = 0; i < 3; ++i)
                 {
                     age_result = game_small_asteroid_add (position);
                     if (age_result != AGE_RESULT::SUCCESS)

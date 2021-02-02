@@ -1,6 +1,10 @@
 #ifndef TYPES_HPP
 #define TYPES_HPP
 
+#ifdef __ANDROID__
+#define TAG "Asteroids"
+#endif
+
 struct float2
 {
     float2 ()
