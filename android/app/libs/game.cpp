@@ -49,9 +49,6 @@ uint32_t game_small_asteroids_live_count = 0;
 uint32_t game_bullets_current_max_count = 0;
 uint32_t game_bullet_live_count = 0;
 
-float3 game_trigger_output_positions;
-float2 game_trigger_output_scales;
-
 const uint32_t game_LARGE_ASTEROID_BATCH_SIZE = 50;
 const uint32_t game_SMALL_ASTEROID_BATCH_SIZE = 150;
 const uint32_t game_BULLET_BATCH_SIZE = 20;
@@ -112,13 +109,6 @@ AGE_RESULT game_init_from_app (struct android_app* p_app)
 
     game_large_asteroids_output_rotation_rand = std::uniform_real_distribution<> (0, 3.14);
 
-    game_trigger_output_positions.x = 0.7f;
-    game_trigger_output_positions.y = 0.7f;
-    game_trigger_output_positions.z = 0.1f;
-
-    game_trigger_output_scales.x = 0.1f;
-    game_trigger_output_scales.y = 0.1f;
-
     age_result = game_reserve_memory_for_asteroids_bullets ();
     if (age_result != AGE_RESULT::SUCCESS)
     {
@@ -174,13 +164,6 @@ AGE_RESULT game_init_from_native_window (ANativeWindow* window, AAssetManager* a
     game_small_asteroids_forward_speed_rand = std::uniform_real_distribution<> (-0.00025, 0.00025);
 
     game_large_asteroids_output_rotation_rand = std::uniform_real_distribution<> (0, 3.14);
-
-    game_trigger_output_positions.x = 0.7f;
-    game_trigger_output_positions.y = 0.7f;
-    game_trigger_output_positions.z = 0.1f;
-
-    game_trigger_output_scales.x = 0.1f;
-    game_trigger_output_scales.y = 0.1f;
 
     age_result = game_reserve_memory_for_asteroids_bullets ();
     if (age_result != AGE_RESULT::SUCCESS)
@@ -933,10 +916,9 @@ AGE_RESULT game_update (uint32_t delta_msecs)
             game_bullets_outputs_scales,
             game_bullet_live_count,
             game_bullets_current_max_count,
-            window_aspect_ratio,
-            &game_trigger_output_positions,
-            &game_trigger_output_scales
+            window_aspect_ratio
     );
+
     if (age_result != AGE_RESULT::SUCCESS)
     {
         return age_result;

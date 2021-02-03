@@ -71,9 +71,6 @@ uint32_t asteroid_image_pixels_size = 0;
 VkImage bullet_image = VK_NULL_HANDLE;
 VkImageView bullet_image_view = VK_NULL_HANDLE;
 uint32_t bullet_image_pixels_size = 0;
-VkImage trigger_image = VK_NULL_HANDLE;
-VkImageView trigger_image_view = VK_NULL_HANDLE;
-uint32_t trigger_image_pixels_size = 0;
 
 VkDeviceMemory images_memory = VK_NULL_HANDLE;
 
@@ -219,10 +216,6 @@ AGE_RESULT graphics_create_image_buffers (AAssetManager* asset_manager)
     int bullet_image_bpp = 0;
     uint8_t *bullet_image_pixels = nullptr;
 
-    int trigger_image_width = 0;
-    int trigger_image_height = 0;
-    int trigger_image_bpp = 0;
-    uint8_t* trigger_image_pixels = nullptr;
 #ifdef WIN32
     utils_import_texture (
         "background.png",
@@ -251,13 +244,6 @@ AGE_RESULT graphics_create_image_buffers (AAssetManager* asset_manager)
         &bullet_image_height,
         &bullet_image_bpp,
         &bullet_image_pixels
-    );
-    utils_import_texture (
-        "trigger.png",
-        &trigger_image_width,
-        &trigger_image_height,
-        &trigger_image_bpp,
-        &trigger_image_pixels
     );
 #elif __ANDROID__
 	utils_import_texture (
@@ -296,14 +282,6 @@ AGE_RESULT graphics_create_image_buffers (AAssetManager* asset_manager)
 			&bullet_image_pixels
 	);
 
-    utils_import_texture (
-            "trigger.png",
-            asset_manager,
-            &trigger_image_width,
-            &trigger_image_height,
-            &trigger_image_bpp,
-            &trigger_image_pixels
-    );
 #endif
     background_image_pixels_size =
             background_image_width *
@@ -329,12 +307,6 @@ AGE_RESULT graphics_create_image_buffers (AAssetManager* asset_manager)
             bullet_image_bpp *
             sizeof (uint8_t);
 
-    trigger_image_pixels_size =
-            trigger_image_width *
-            trigger_image_height *
-            trigger_image_bpp *
-            sizeof (uint8_t);
-
     VkBuffer staging_image_buffer = VK_NULL_HANDLE;
     VkDeviceMemory staging_image_memory = VK_NULL_HANDLE;
 
@@ -344,16 +316,14 @@ AGE_RESULT graphics_create_image_buffers (AAssetManager* asset_manager)
             &background_image,
             &player_image,
             &asteroid_image,
-            &bullet_image,
-            &trigger_image
+            &bullet_image
     };
 
     VkExtent3D images_extents[] = {
             {(uint32_t) background_image_width, (uint32_t) background_image_height, 1},
             {(uint32_t) player_image_width,     (uint32_t) player_image_height,     1},
             {(uint32_t) asteroid_image_width,   (uint32_t) asteroid_image_height,   1},
-            {(uint32_t) bullet_image_width,     (uint32_t) bullet_image_height,     1},
-            {(uint32_t) trigger_image_width,     (uint32_t) trigger_image_height,     1}
+            {(uint32_t) bullet_image_width,     (uint32_t) bullet_image_height,     1}
     };
 
     VkDeviceSize buffer_offsets[] =
@@ -375,16 +345,14 @@ AGE_RESULT graphics_create_image_buffers (AAssetManager* asset_manager)
             &background_image_view,
             &player_image_view,
             &asteroid_image_view,
-            &bullet_image_view,
-            &trigger_image_view
+            &bullet_image_view
     };
 
     age_result = vk_create_buffer (
             (VkDeviceSize) background_image_pixels_size +
             (VkDeviceSize) player_image_pixels_size +
             (VkDeviceSize) asteroid_image_pixels_size +
-            (VkDeviceSize) bullet_image_pixels_size +
-            (VkDeviceSize) trigger_image_pixels_size,
+            (VkDeviceSize) bullet_image_pixels_size,
             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
             &staging_image_buffer
     );
@@ -405,8 +373,7 @@ AGE_RESULT graphics_create_image_buffers (AAssetManager* asset_manager)
             (VkDeviceSize) background_image_pixels_size +
             (VkDeviceSize) player_image_pixels_size +
             (VkDeviceSize) asteroid_image_pixels_size +
-            (VkDeviceSize) bullet_image_pixels_size +
-            (VkDeviceSize) trigger_image_pixels_size,
+            (VkDeviceSize) bullet_image_pixels_size,
             &mapped_memory_ptr
     );
     if (age_result != AGE_RESULT::SUCCESS)
@@ -424,9 +391,6 @@ AGE_RESULT graphics_create_image_buffers (AAssetManager* asset_manager)
 	vk_copy_data_to_memory_mapped_ptr (
 		background_image_pixels_size + player_image_pixels_size + asteroid_image_pixels_size,
 		bullet_image_pixels, bullet_image_pixels_size, mapped_memory_ptr);
-	vk_copy_data_to_memory_mapped_ptr (
-		background_image_pixels_size + player_image_pixels_size + asteroid_image_pixels_size +
-		bullet_image_pixels_size, trigger_image_pixels, trigger_image_pixels_size, mapped_memory_ptr);
 
     vkUnmapMemory (device, staging_image_memory);
 
@@ -438,7 +402,7 @@ AGE_RESULT graphics_create_image_buffers (AAssetManager* asset_manager)
             VK_SAMPLE_COUNT_1_BIT,
             VK_IMAGE_TILING_OPTIMAL,
             VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-            5,
+            4,
             images_extents,
             images
     );
@@ -447,7 +411,7 @@ AGE_RESULT graphics_create_image_buffers (AAssetManager* asset_manager)
         goto exit;
     }
 
-    age_result = vk_allocate_bind_image_memory (images, 5, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+    age_result = vk_allocate_bind_image_memory (images, 4, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                                                 &images_memory);
     if (age_result != AGE_RESULT::SUCCESS)
     {
@@ -456,7 +420,7 @@ AGE_RESULT graphics_create_image_buffers (AAssetManager* asset_manager)
 
     age_result = vk_change_images_layout (
             images,
-            5,
+            4,
             0,
             VK_ACCESS_TRANSFER_WRITE_BIT,
             VK_IMAGE_LAYOUT_UNDEFINED,
@@ -472,7 +436,7 @@ AGE_RESULT graphics_create_image_buffers (AAssetManager* asset_manager)
     }
 
     age_result = vk_copy_buffer_to_images (staging_image_buffer, images, images_extents,
-                                           buffer_offsets, 5);
+                                           buffer_offsets, 4);
     if (age_result != AGE_RESULT::SUCCESS)
     {
         goto exit;
@@ -480,7 +444,7 @@ AGE_RESULT graphics_create_image_buffers (AAssetManager* asset_manager)
 
     age_result = vk_change_images_layout (
             images,
-            5,
+            4,
             VK_ACCESS_TRANSFER_WRITE_BIT,
             VK_ACCESS_SHADER_READ_BIT,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -497,7 +461,7 @@ AGE_RESULT graphics_create_image_buffers (AAssetManager* asset_manager)
 
     age_result = vk_create_image_views (
             images,
-            5,
+            4,
             VK_IMAGE_VIEW_TYPE_2D,
             VK_FORMAT_R8G8B8A8_UNORM,
             image_views
@@ -992,7 +956,7 @@ AGE_RESULT graphics_create_descriptor_sets_pipeline_layout ()
 		texture_descriptor_set_layout
 	};
 
-	VkDescriptorImageInfo image_infos[5] = {
+	VkDescriptorImageInfo image_infos[4] = {
 		{
 			common_sampler,
 			background_image_view,
@@ -1012,12 +976,7 @@ AGE_RESULT graphics_create_descriptor_sets_pipeline_layout ()
 			common_sampler,
 			bullet_image_view,
 			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-		},
-        {
-		    common_sampler,
-		    trigger_image_view,
-            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-        }
+		}
 	};
 
 	VkWriteDescriptorSet texture_descriptor_set_write = {
@@ -1026,7 +985,7 @@ AGE_RESULT graphics_create_descriptor_sets_pipeline_layout ()
 		texture_descriptor_set,
 		0,
 		0,
-		5,
+		4,
 		VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 		image_infos,
 		nullptr,
@@ -1389,8 +1348,7 @@ AGE_RESULT graphics_update_transforms_buffer_data (
 	const float3* game_bullets_outputs_positions, const float* game_bullets_outputs_rotations,
 	const float2* game_bullets_outputs_scales,
 	const uint32_t game_bullet_live_count, const uint32_t game_bullets_current_max_count,
-	const float background_scale,
-	const float3* game_trigger_output_position, const float2* game_trigger_output_scales
+	const float background_scale
 )
 {
 	float background_transform[] = {0, 0, 0.9f, 0, background_scale, background_scale};
@@ -1475,18 +1433,6 @@ AGE_RESULT graphics_update_transforms_buffer_data (
 			sizeof (float3) + sizeof (float)),
 			game_bullets_outputs_scales + b, sizeof (float2));
 	}
-
-	float trigger_transform[] = {
-        game_trigger_output_position->x,
-        game_trigger_output_position->y,
-        game_trigger_output_position->z,
-        0,
-        game_trigger_output_scales->x,
-        game_trigger_output_scales->y
-	};
-
-	std::memcpy ((char*)transforms_aligned_data + (aligned_size_per_transform * (game_large_asteroids_live_count +
-		game_small_asteroids_live_count + game_bullet_live_count + 2)), trigger_transform, sizeof (trigger_transform));
 
 	std::memcpy (transforms_mapped_data, transforms_aligned_data, total_transforms_size);
 
@@ -1779,16 +1725,6 @@ void graphics_shutdown ()
 	if (bullet_image_view != VK_NULL_HANDLE)
 	{
 		vkDestroyImageView (device, bullet_image_view, nullptr);
-	}
-
-	if (trigger_image!= VK_NULL_HANDLE)
-	{
-		vkDestroyImage (device, trigger_image, nullptr);
-	}
-
-	if (trigger_image_view != VK_NULL_HANDLE)
-	{
-		vkDestroyImageView (device, trigger_image_view, nullptr);
 	}
 
 	if (images_memory != VK_NULL_HANDLE)

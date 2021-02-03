@@ -54,8 +54,7 @@ AGE_RESULT graphics_update_transforms_buffer_data (
 	const uint32_t game_small_asteroids_live_count, const uint32_t game_small_asteroids_current_max_count, 
 	const float3* game_bullets_outputs_positions, const float* game_bullets_outputs_rotations, const float2* game_bullets_outputs_scales,     
 	const uint32_t game_bullet_live_count, const uint32_t game_bullets_current_max_count,
-	const float background_scale,
-	const float3* game_trigger_output_position, const float2* game_trigger_output_scales
+	const float background_scale
 );
 
 AGE_RESULT graphics_submit_present ();
