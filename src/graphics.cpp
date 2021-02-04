@@ -892,7 +892,7 @@ AGE_RESULT graphics_create_descriptor_sets_pipeline_layout ()
 		{
 			0,
 			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-			5,
+			4,
 			VK_SHADER_STAGE_FRAGMENT_BIT,
 			nullptr
 		}
@@ -1192,7 +1192,7 @@ AGE_RESULT graphics_update_command_buffers (
 		}
 
 		render_pass_begin_info.framebuffer = swapchain_framebuffers[i];
-		VkDeviceSize vertex_index_buffer_offsets[6] = {
+		VkDeviceSize vertex_index_buffer_offsets[3] = {
 			0, 
 			(VkDeviceSize) actor_positions_size,
 			(VkDeviceSize) actor_positions_size + (VkDeviceSize) actor_uvs_size
@@ -1213,6 +1213,7 @@ AGE_RESULT graphics_update_command_buffers (
 				graphics_pipeline_layout, 0, 1, &transform_descriptor_set, 1, &dynamic_offset);
 		vkCmdBindDescriptorSets (swapchain_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS,
 				graphics_pipeline_layout, 1, 1, &texture_descriptor_set, 0, nullptr);
+
 		uint32_t texture_index = 0;
 		vkCmdPushConstants (swapchain_command_buffers[i], graphics_pipeline_layout,
 				VK_SHADER_STAGE_FRAGMENT_BIT, sizeof (float), sizeof (uint32_t), &texture_index);
@@ -1229,6 +1230,7 @@ AGE_RESULT graphics_update_command_buffers (
 				graphics_pipeline_layout, 0, 1, &transform_descriptor_set, 1, &dynamic_offset);
 		vkCmdBindDescriptorSets (swapchain_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS,
 				graphics_pipeline_layout, 1, 1, &texture_descriptor_set, 0, nullptr);
+
 		texture_index = 1;
 		vkCmdPushConstants (swapchain_command_buffers[i], graphics_pipeline_layout,
 				VK_SHADER_STAGE_FRAGMENT_BIT, sizeof (float), sizeof (uint32_t), &texture_index);
@@ -1303,7 +1305,7 @@ AGE_RESULT graphics_update_command_buffers (
 			vkCmdDrawIndexed (swapchain_command_buffers[i], actor_index_count, 1, 0, 0, 0);
 		}
 
-		texture_index = 4;
+		/*texture_index = 4;
         vkCmdPushConstants (swapchain_command_buffers[i], graphics_pipeline_layout,
                             VK_SHADER_STAGE_FRAGMENT_BIT, sizeof (float), sizeof (uint32_t), &texture_index);
         dynamic_offset = aligned_size_per_transform * (game_large_asteroids_live_count +
@@ -1320,7 +1322,7 @@ AGE_RESULT graphics_update_command_buffers (
                                 &vertex_index_buffer_offsets[1]);
         vkCmdBindIndexBuffer (swapchain_command_buffers[i], vertex_index_buffer,
                               vertex_index_buffer_offsets[2], VK_INDEX_TYPE_UINT32);
-        vkCmdDrawIndexed (swapchain_command_buffers[i], actor_index_count, 1, 0, 0, 0);
+        vkCmdDrawIndexed (swapchain_command_buffers[i], actor_index_count, 1, 0, 0, 0);*/
 
 		vkCmdEndRenderPass (swapchain_command_buffers[i]);
 
