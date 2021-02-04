@@ -716,7 +716,7 @@ AGE_RESULT game_player_apply_damping ()
     return age_result;
 }
 
-AGE_RESULT game_player_update_speed ()
+AGE_RESULT game_player_update_speed (joystick_input* j_input)
 {
     AGE_RESULT age_result = AGE_RESULT::SUCCESS;
 
@@ -726,8 +726,10 @@ AGE_RESULT game_player_update_speed ()
     }
 
     float2 acceleration = {
-            game_player_transform_inputs.acceleration * game_player_transform_inputs.forward_vector.x * move_forward_back,
-            game_player_transform_inputs.acceleration * game_player_transform_inputs.forward_vector.y * move_forward_back
+            game_player_transform_inputs.acceleration * game_player_transform_inputs.forward_vector.x *
+            j_input->input_move_forward_back,
+            game_player_transform_inputs.acceleration * game_player_transform_inputs.forward_vector.y *
+            j_input->input_move_forward_back
     };
 
     game_player_transform_inputs.v.x = game_player_transform_inputs.u.x + (acceleration.x * game_delta_time);
@@ -738,11 +740,12 @@ AGE_RESULT game_player_update_speed ()
     return age_result;
 }
 
-AGE_RESULT game_player_update_turn ()
+AGE_RESULT game_player_update_turn (joystick_input* j_input)
 {
     AGE_RESULT age_result = AGE_RESULT::SUCCESS;
 
-    game_player_transform_inputs.rotation += (game_player_transform_inputs.rotation_speed * turn_right_left * game_delta_time);
+    game_player_transform_inputs.rotation += (game_player_transform_inputs.rotation_speed *
+            j_input->input_turn_right_left * game_delta_time);
     game_player_output_rotation = game_player_transform_inputs.rotation;
 
     age_result = game_update_player_vectors ();
@@ -750,29 +753,41 @@ AGE_RESULT game_player_update_turn ()
     return age_result;
 }
 
-AGE_RESULT game_process_player_input ()
+AGE_RESULT game_process_player_movement_input (joystick_input* j_input)
 {
     AGE_RESULT age_result = AGE_RESULT::SUCCESS;
 
-    age_result = game_player_update_speed ();
+    age_result = game_player_update_speed (j_input);
     if (age_result != AGE_RESULT::SUCCESS)
     {
         return age_result;
     }
 
-    age_result = game_player_update_turn ();
+    age_result = game_player_update_turn (j_input);
     if (age_result != AGE_RESULT::SUCCESS)
     {
         return age_result;
     }
 
-    if (fire)
+    /*if (input_fire)
     {
         age_result = game_player_attempt_to_shoot ();
         if (age_result != AGE_RESULT::SUCCESS)
         {
             return age_result;
         }
+    }*/
+
+    return age_result;
+}
+
+AGE_RESULT game_process_player_trigger_input (trigger_input* t_input)
+{
+    AGE_RESULT age_result = AGE_RESULT::SUCCESS;
+
+    if (t_input->fire)
+    {
+        age_result = game_player_attempt_to_shoot();
     }
 
     return age_result;
@@ -866,12 +881,6 @@ AGE_RESULT game_update (uint32_t delta_msecs)
     game_delta_time = delta_msecs;
 
     game_secs_since_last_shot += game_delta_time;;
-
-    age_result = game_process_player_input ();
-    if (age_result != AGE_RESULT::SUCCESS)
-    {
-        return age_result;
-    }
 
     age_result = game_update_player_asteroids_bullets_output_positions ();
     if (age_result != AGE_RESULT::SUCCESS)

@@ -16,10 +16,13 @@
 #include "game.hpp"
 #include "log.hpp"
 #include "types.hpp"
+#include "input.hpp"
 
 uint32_t tick_rate_msecs = 15;
 
 bool is_game_inited = false;
+
+joystick_input* j_input = nullptr;
 
 static void dummy_draw (struct android_app* p_app)
 {
@@ -185,24 +188,7 @@ Java_com_ntkinteractive_asteroids_VkSurfaceView_GameInit (JNIEnv *env, jobject t
         log_error (age_result);
     }
 
-    /*while (true)
-    {
-        age_result = game_update (33);
-
-        if (age_result != AGE_RESULT::SUCCESS)
-        {
-            log_error (age_result);
-            break;
-        }
-
-        age_result = game_submit_present ();
-
-        if (age_result != AGE_RESULT::SUCCESS)
-        {
-            log_error (age_result);
-            break;
-        }
-    }*/
+    j_input = (joystick_input*) std::malloc (sizeof (joystick_input));
 }
 
 extern "C"
@@ -238,4 +224,17 @@ Java_com_ntkinteractive_asteroids_VkSurfaceView_GameShutdown (JNIEnv *env, jobje
     game_shutdown ();
 
     ANativeWindow_release (window);
+
+    std::free (j_input);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_ntkinteractive_asteroids_JoystickView_UpdateMovementInput (JNIEnv *env, jobject thiz,
+                                                                    jfloat move_forward_back, jfloat turn_right_left)
+{
+    j_input->input_move_forward_back = move_forward_back;
+    j_input->input_turn_right_left = turn_right_left;
+
+    game_process_player_movement_input (j_input);
 }
