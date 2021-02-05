@@ -22,8 +22,6 @@ uint32_t tick_rate_msecs = 15;
 
 bool is_game_inited = false;
 
-joystick_input* j_input = nullptr;
-
 static void dummy_draw (struct android_app* p_app)
 {
     __android_log_write (ANDROID_LOG_VERBOSE, TAG, "draw_something");
@@ -171,6 +169,9 @@ Java_com_ntkinteractive_asteroids_MainActivity_HelloFromNDK (JNIEnv *env, jobjec
 ANativeWindow* window = nullptr;
 AAssetManager* asset_manager = nullptr;
 
+joystick_input* j_input = nullptr;
+trigger_input* t_input = nullptr;
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_ntkinteractive_asteroids_VkSurfaceView_GameInit (JNIEnv *env, jobject thiz, jobject surface, jobject
@@ -189,6 +190,7 @@ Java_com_ntkinteractive_asteroids_VkSurfaceView_GameInit (JNIEnv *env, jobject t
     }
 
     j_input = (joystick_input*) std::malloc (sizeof (joystick_input));
+    t_input = (trigger_input*) std::malloc (sizeof (trigger_input));
 }
 
 extern "C"
@@ -226,6 +228,7 @@ Java_com_ntkinteractive_asteroids_VkSurfaceView_GameShutdown (JNIEnv *env, jobje
     ANativeWindow_release (window);
 
     std::free (j_input);
+    std::free (t_input);
 }
 
 extern "C"
@@ -233,8 +236,23 @@ JNIEXPORT void JNICALL
 Java_com_ntkinteractive_asteroids_JoystickView_UpdateMovementInput (JNIEnv *env, jobject thiz,
                                                                     jfloat move_forward_back, jfloat turn_right_left)
 {
-    j_input->input_move_forward_back = move_forward_back;
-    j_input->input_turn_right_left = turn_right_left;
+    j_input->move_forward_back = move_forward_back;
+    j_input->turn_right_left = turn_right_left;
 
     game_process_player_movement_input (j_input);
+    game_process_player_trigger_input (t_input);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_ntkinteractive_asteroids_MainActivity_UpdateTriggerInput (JNIEnv *env, jobject thiz, jboolean fire)
+{
+    t_input->fire = fire;
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_ntkinteractive_asteroids_VkSurfaceView_GameAddAsteroid (JNIEnv *env, jobject thiz)
+{
+    game_process_left_mouse_click (0, 0);
 }

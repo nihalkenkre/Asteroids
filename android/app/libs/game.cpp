@@ -727,9 +727,9 @@ AGE_RESULT game_player_update_speed (joystick_input* j_input)
 
     float2 acceleration = {
             game_player_transform_inputs.acceleration * game_player_transform_inputs.forward_vector.x *
-            j_input->input_move_forward_back,
+            j_input->move_forward_back,
             game_player_transform_inputs.acceleration * game_player_transform_inputs.forward_vector.y *
-            j_input->input_move_forward_back
+            j_input->move_forward_back
     };
 
     game_player_transform_inputs.v.x = game_player_transform_inputs.u.x + (acceleration.x * game_delta_time);
@@ -745,7 +745,7 @@ AGE_RESULT game_player_update_turn (joystick_input* j_input)
     AGE_RESULT age_result = AGE_RESULT::SUCCESS;
 
     game_player_transform_inputs.rotation += (game_player_transform_inputs.rotation_speed *
-            j_input->input_turn_right_left * game_delta_time);
+                                              j_input->turn_right_left * game_delta_time);
     game_player_output_rotation = game_player_transform_inputs.rotation;
 
     age_result = game_update_player_vectors ();

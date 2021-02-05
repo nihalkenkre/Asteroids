@@ -18,6 +18,8 @@ AGE_RESULT game_process_player_trigger_input (trigger_input* t_input);
 AGE_RESULT game_update (uint32_t delta_time);
 AGE_RESULT game_submit_present ();
 
+AGE_RESULT game_process_left_mouse_click (const int32_t x, const int32_t y);
+
 void game_shutdown ();
 
 #endif //ASTEROIDS_GAME_HPP

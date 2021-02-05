@@ -7,8 +7,8 @@
 
 struct joystick_input
 {
-    float input_move_forward_back; // forward = 1, back = -1
-    float input_turn_right_left; // right = -1, left = 1
+    float move_forward_back; // forward = 1, back = -1
+    float turn_right_left; // right = -1, left = 1
 };
 
 struct trigger_input
