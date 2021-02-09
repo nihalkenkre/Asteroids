@@ -191,15 +191,17 @@ Java_com_ntkinteractive_asteroids_VkSurfaceView_GameInit (JNIEnv *env, jobject t
 
     j_input = (joystick_input*) std::malloc (sizeof (joystick_input));
     t_input = (trigger_input*) std::malloc (sizeof (trigger_input));
+
+    is_game_inited = true;
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_ntkinteractive_asteroids_VkSurfaceView_GameUpdate (JNIEnv *env, jobject thiz)
+Java_com_ntkinteractive_asteroids_VkSurfaceView_GameUpdate (JNIEnv *env, jobject thiz, jlong delta_time_msecs)
 {
     AGE_RESULT age_result = AGE_RESULT::SUCCESS;
 
-    age_result = game_update (33);
+    age_result = game_update (delta_time_msecs);
     if (age_result != AGE_RESULT::SUCCESS)
     {
         log_error (age_result);
@@ -229,6 +231,8 @@ Java_com_ntkinteractive_asteroids_VkSurfaceView_GameShutdown (JNIEnv *env, jobje
 
     std::free (j_input);
     std::free (t_input);
+
+    is_game_inited = false;
 }
 
 extern "C"
@@ -236,6 +240,11 @@ JNIEXPORT void JNICALL
 Java_com_ntkinteractive_asteroids_JoystickView_UpdateMovementInput (JNIEnv *env, jobject thiz,
                                                                     jfloat move_forward_back, jfloat turn_right_left)
 {
+    if (!is_game_inited)
+    {
+        return;
+    }
+
     j_input->move_forward_back = move_forward_back;
     j_input->turn_right_left = turn_right_left;
 
@@ -247,6 +256,11 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_ntkinteractive_asteroids_MainActivity_UpdateTriggerInput (JNIEnv *env, jobject thiz, jboolean fire)
 {
+    if (!is_game_inited)
+    {
+        return;
+    }
+
     t_input->fire = fire;
 }
 
