@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <Windows.h>
+
 AGE_RESULT game_init (const HINSTANCE h_instance, const HWND h_wnd);
 AGE_RESULT game_process_left_mouse_click (const int32_t x, const int32_t y);
 AGE_RESULT game_process_right_mouse_click (const int32_t x, const int32_t y);

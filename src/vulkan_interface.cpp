@@ -28,8 +28,8 @@ VkPhysicalDeviceMemoryProperties physical_device_memory_properties;
 VkPhysicalDeviceLimits physical_device_limits;
 VkExtent2D surface_extent;
 VkSwapchainKHR swapchain;
-std::vector<VkImage> swapchain_images;
-std::vector<VkImageView> swapchain_image_views;
+VkImage* swapchain_images;
+VkImageView* swapchain_image_views;
 uint32_t swapchain_image_count;
 VkExtent2D current_extent;
 VkSurfaceFormatKHR chosen_surface_format;
@@ -489,9 +489,10 @@ AGE_RESULT create_swapchain_image_views ()
 	VkResult vk_result = VK_SUCCESS;
 
 	vkGetSwapchainImagesKHR (device, swapchain, &swapchain_image_count, nullptr);
-	swapchain_images.resize (swapchain_image_count);
-	vkGetSwapchainImagesKHR (device, swapchain, &swapchain_image_count, swapchain_images.data ());
-	swapchain_image_views.resize (swapchain_image_count);
+	swapchain_images = (VkImage*)utils_malloc (sizeof (VkImage) * swapchain_image_count);
+	vkGetSwapchainImagesKHR (device, swapchain, &swapchain_image_count, swapchain_images);
+
+	swapchain_image_views = (VkImageView*)utils_malloc (sizeof (VkImageView) * swapchain_image_count);
 
 	VkImageSubresourceRange subresource_range = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 	VkComponentMapping component_mapping = { VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY };
@@ -821,21 +822,22 @@ void vulkan_interface_shutdown ()
 		vkDestroySampler (device, common_sampler, nullptr);
 	}
 
-	for (auto& swapchain_image_view : swapchain_image_views)
+	if (swapchain_image_views != nullptr)
 	{
-		if (swapchain_image_view != VK_NULL_HANDLE)
+		for (uint32_t i = 0; i < swapchain_image_count; ++i)
 		{
-			vkDestroyImageView (device, swapchain_image_view, nullptr);
+			vkDestroyImageView (device, swapchain_image_views[i], nullptr);
 		}
 	}
-	swapchain_image_views.clear ();
+
+	utils_free (swapchain_image_views);
 
 	if (swapchain != VK_NULL_HANDLE)
 	{
 		vkDestroySwapchainKHR (device, swapchain, nullptr);
 	}
 
-	swapchain_images.clear ();
+	utils_free (swapchain_images);
 
 	if (device != VK_NULL_HANDLE)
 	{

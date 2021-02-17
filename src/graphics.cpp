@@ -784,7 +784,7 @@ AGE_RESULT graphics_create_swapchain_command_pool_buffers ()
 	VkCommandPoolCreateInfo cmd_pool_create_info = {
 		VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
 		nullptr,
-		0,
+		VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
 		graphics_queue_family_index
 	};
 
@@ -1176,15 +1176,15 @@ AGE_RESULT graphics_update_command_buffers (
 		nullptr
 	};
 
-	vk_result = vkResetCommandPool (device, swapchain_command_pool,
-			VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT);
-	if (vk_result != VK_SUCCESS)
-	{
-		return AGE_RESULT::ERROR_GRAPHICS_RESET_COMMAND_POOL;
-	}
 
 	for (uint32_t i = 0; i < swapchain_image_count; ++i)
 	{
+        vk_result = vkResetCommandBuffer (swapchain_command_buffers[i], VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
+        if (vk_result != VK_SUCCESS)
+        {
+            return AGE_RESULT::ERROR_GRAPHICS_RESET_COMMAND_POOL;
+        }
+
 		vk_result = vkBeginCommandBuffer (swapchain_command_buffers[i], &command_buffer_begin_info);
 		if (vk_result != VK_SUCCESS)
 		{
