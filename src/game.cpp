@@ -182,7 +182,7 @@ AGE_RESULT game_init (game* game_obj, const HINSTANCE h_instance, const HWND h_w
     game_obj->SMALL_ASTEROID_BATCH_SIZE = 150;
     game_obj->BULLET_BATCH_SIZE = 20;
 
-    game_obj->player_shooting_interval_msecs = 100.f;
+    game_obj->player_shooting_interval_msecs = 100;
 
     game_obj->player_transform_inputs.time_msecs_to_come_to_rest = 500.f;
     game_obj->player_transform_inputs.forward_vector.x = 0;
