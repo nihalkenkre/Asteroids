@@ -5,7 +5,8 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${env:VULKAN_SDK}/Include",
-                "${workspaceFolder}/External/**"
+                "${workspaceFolder}/src/external/**",
+                "${workspaceFolder}/src/**"
             ],
             "defines": [
                 "_DEBUG",

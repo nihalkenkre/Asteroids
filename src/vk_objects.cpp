@@ -447,11 +447,11 @@ vk_swapchain::vk_swapchain (const VkDevice& device, const vk_surface* surface)
         surface->format.format,
         surface->format.colorSpace,
         surface->extent,
-        0,
+        1,
         surface->capabilities.supportedUsageFlags,
         VK_SHARING_MODE_EXCLUSIVE,
         0,
-        nullptr,
+        {},
         surface->capabilities.currentTransform,
         VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
         surface->present_mode
