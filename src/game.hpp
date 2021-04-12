@@ -4,6 +4,7 @@
 #include "error.hpp"
 
 #include <cstdint>
+#include <memory>
 #include <Windows.h>
 
 typedef struct game_ game;
@@ -24,4 +25,27 @@ AGE_RESULT game_update (game* game_obj, uint32_t delta_time);
 AGE_RESULT game_submit_present (game* game_obj);
 void game_shutdown (game* game_obj);
 void game_destroy (game* game_obj);
+
+
+#include "graphics.hpp"
+#include "scene.hpp"
+
+class game_class
+{
+public:
+    game_class (const HINSTANCE& h_instance, const HWND& h_wnd);
+
+    void process_left_mouse_click (const int32_t x, const int32_t y);
+    void process_right_mouse_click (const int32_t x, const int32_t y);
+    void process_key_down (const WPARAM w_param);
+    void process_key_up (const WPARAM w_param);
+
+    void update (uint32_t delta_time);
+    void submit_present ();
+
+private:
+    std::unique_ptr<common_graphics> common_graphics_obj;
+    std::unique_ptr<scene> scene_obj;
+};
+
 #endif

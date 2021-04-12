@@ -5,6 +5,8 @@
 #include "types.hpp"
 
 #include <cstdint>
+#include <memory>
+#include <Windows.h>
 
 #ifdef __ANDROID__
 #include <android/asset_manager.h>

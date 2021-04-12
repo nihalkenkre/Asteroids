@@ -86,6 +86,44 @@ std::uniform_real_distribution<> game_large_asteroids_output_position_y_rand;
 std::uniform_real_distribution<> game_large_asteroids_output_rotation_rand;
 */
 
+
+game_class::game_class (const HINSTANCE& h_instance, const HWND& h_wnd)
+{
+    printf ("game_class::game_class\n");
+
+    common_graphics_obj = std::make_unique<common_graphics> (h_instance, h_wnd);
+    scene_obj = std::make_unique<scene> (common_graphics_obj.get ());
+}
+
+void game_class::process_key_down (const WPARAM w_param)
+{
+}
+
+void game_class::process_key_up (const WPARAM w_param)
+{
+
+}
+
+void game_class::process_left_mouse_click (const int32_t x, const int32_t y)
+{
+
+}
+
+void game_class::process_right_mouse_click (const int32_t x, const int32_t y)
+{
+
+}
+
+void game_class::update (uint32_t delta_time)
+{
+
+}
+
+void game_class::submit_present ()
+{
+
+}
+
 struct game_
 {
     bool is_w_pressed = false;

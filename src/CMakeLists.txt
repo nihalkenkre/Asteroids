@@ -18,8 +18,8 @@ if (CMAKE_CL_64)
 endif ()
 
 
-set (HPP error.hpp game.hpp log.hpp graphics.hpp types.hpp vulkan_interface.hpp utils.hpp compute.hpp actor_vert.hpp actor_frag.hpp vk_utils.hpp)
-set (CPP main.cpp game.cpp log.cpp graphics.cpp types.cpp vulkan_interface.cpp utils.cpp compute.cpp vk_utils.cpp)
+set (HPP error.hpp game.hpp log.hpp common_graphics.hpp scene_graphics.hpp types.hpp vulkan_interface.hpp utils.hpp compute.hpp actor_vert.hpp actor_frag.hpp vk_utils.hpp scene.hpp graphics.hpp vk_objects.hpp)
+set (CPP main.cpp game.cpp log.cpp common_graphics.cpp scene_graphics.cpp types.cpp vulkan_interface.cpp utils.cpp compute.cpp vk_utils.cpp scene.cpp graphics.cpp vk_objects.cpp)
 
 add_executable (Asteroids WIN32 ${HPP} ${CPP})
 target_link_libraries (Asteroids vulkan-1)
