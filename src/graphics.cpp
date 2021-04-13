@@ -103,7 +103,7 @@ AGE_RESULT graphics_create_geometry_buffers ()
 		goto exit;
 	}
 
-	age_result = vk_map_buffer_memory (
+	age_result = vk_map_memory (
 		staging_vertex_index_memory,
 		0,
 		size,
@@ -363,7 +363,7 @@ AGE_RESULT graphics_create_image_buffers (AAssetManager* asset_manager)
     {
         goto exit;
     }
-    age_result = vk_map_buffer_memory (
+    age_result = vk_map_memory (
             staging_image_memory,
             0,
             (VkDeviceSize) background_image_pixels_size +

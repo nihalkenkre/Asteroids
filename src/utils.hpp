@@ -9,7 +9,47 @@
 #include <cstdbool>
 #include <cstdint>
 
+#include <vector>
+#include <string>
+
 #define CHECK_AGAINST_RESULT(func, result) result = func; if (result != 0) return result;
+
+class full_file_path
+{
+public:
+    full_file_path (const std::string& partial_file_path);
+
+    std::string path;
+};
+
+
+class mesh
+{
+public:
+    mesh ();
+
+    std::vector<float> positions;
+    std::vector<float> uvs;
+
+    std::vector<uint32_t> indices;
+
+    uint32_t positions_size;
+    uint32_t uvs_size;
+    uint32_t indices_size;
+};
+
+
+class image
+{
+public:
+    image (const std::string& partial_file_path);
+
+    uint32_t width;
+    uint32_t height;
+    uint32_t bpp;
+
+    std::vector<uint8_t> pixels;
+};
 
 #ifdef WIN32
  struct file_path

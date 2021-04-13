@@ -8,8 +8,11 @@
 #include <vulkan/vulkan_win32.h>
 
 #include "error.hpp"
+#include "utils.hpp"
 
-vk_instance::vk_instance () : instance (VK_NULL_HANDLE)
+#include <stb_image.h>
+
+vk_instance::vk_instance ()
 {
     printf ("vk_instance::vk_instance\n");
 
@@ -175,7 +178,7 @@ vk_surface::vk_surface (const VkInstance& instance,
                         const VkPhysicalDevice& physical_device,
                         const HINSTANCE& h_instance,
                         const HWND& h_wnd,
-                        const uint32_t& graphics_queue_family_index)
+                        const uint32_t& graphics_queue_family_index) : instance (instance)
 {
     printf ("vk_surface::vk_surface\n");
 
@@ -268,8 +271,6 @@ vk_surface::vk_surface (const VkInstance& instance,
                                                );
         present_mode = *present_mode_iter;
     }
-
-    this->instance = instance;
 }
 
 vk_surface::vk_surface (vk_surface&& other) noexcept
@@ -300,7 +301,7 @@ vk_surface::~vk_surface () noexcept
 {
     printf ("vk_surface::~vk_surface\n");
 
-    if (surface != VK_NULL_HANDLE)
+    if (surface != VK_NULL_HANDLE && instance != VK_NULL_HANDLE)
     {
         vkDestroySurfaceKHR (instance, surface, nullptr);
     }
@@ -459,7 +460,7 @@ vk_device_queues::vk_device_queues (const VkPhysicalDevice& physical_device,
     this->transfer_queue = vk_queue (device, transfer_queue);
 }
 
-vk_swapchain::vk_swapchain (const VkDevice& device, const vk_surface& surface)
+vk_swapchain::vk_swapchain (const VkDevice& device, const vk_surface& surface) : device (device)
 {
     printf ("vk_swapchain::vk_swapchain\n");
 
@@ -488,8 +489,6 @@ vk_swapchain::vk_swapchain (const VkDevice& device, const vk_surface& surface)
     {
         throw AGE_RESULT::ERROR_GRAPHICS_CREATE_SWAPCHAIN;
     }
-
-    this->device = device;
 }
 
 vk_swapchain::vk_swapchain (vk_swapchain&& other) noexcept
@@ -516,7 +515,7 @@ vk_swapchain::~vk_swapchain () noexcept
 {
     printf ("vk_swapchain::~vk_swapchain\n");
 
-    if (swapchain != VK_NULL_HANDLE)
+    if (swapchain != VK_NULL_HANDLE && device != VK_NULL_HANDLE)
     {
         vkDestroySwapchainKHR (device, swapchain, nullptr);
     }
@@ -524,8 +523,7 @@ vk_swapchain::~vk_swapchain () noexcept
 
 vk_command_pool::vk_command_pool (const VkDevice& device,
                                     const uint32_t& queue_family_index,
-                                    const VkCommandPoolCreateFlags& flags
-                                )
+                                    const VkCommandPoolCreateFlags& flags) : device (device)
 {
     printf ("vk_command_pool::vk_command_pool\n");
 
@@ -541,8 +539,6 @@ vk_command_pool::vk_command_pool (const VkDevice& device,
     {
         throw AGE_RESULT::ERROR_GRAPHICS_CREATE_COMMAND_POOL;
     }
-
-    this->device = device;
 }
 
 vk_command_pool::vk_command_pool (vk_command_pool&& other) noexcept
@@ -572,7 +568,7 @@ vk_command_pool::~vk_command_pool () noexcept
     }
 }
 
-vk_sampler::vk_sampler (const VkDevice& device)
+vk_sampler::vk_sampler (const VkDevice& device) : device (device)
 {
     printf ("vk_sampler::vk_sampler\n");
 
@@ -603,8 +599,6 @@ vk_sampler::vk_sampler (const VkDevice& device)
     {
         throw AGE_RESULT::ERROR_GRAPHICS_CREATE_SAMPLER;
     }
-
-    this->device = device;
 }
 
 vk_sampler::vk_sampler (vk_sampler&& other) noexcept
@@ -637,7 +631,12 @@ vk_sampler::~vk_sampler () noexcept
     }
 }
 
-vk_buffer::vk_buffer (const VkDevice& device, const VkDeviceSize& size, const VkBufferUsageFlags usage_flags, const VkSharingMode& sharing_mode, const uint32_t& queue_family_index)
+vk_buffer::vk_buffer (
+    const VkDevice& device,
+    const VkDeviceSize& size,
+    const VkBufferUsageFlags usage_flags,
+    const VkSharingMode& sharing_mode,
+    const uint32_t& queue_family_index) : device (device)
 {
     printf ("vk_buffer::vk_buffer\n");
 
@@ -658,8 +657,6 @@ vk_buffer::vk_buffer (const VkDevice& device, const VkDeviceSize& size, const Vk
     {
         throw AGE_RESULT::ERROR_GRAPHICS_CREATE_BUFFER;
     }
-
-    this->device = device;
 }
 
 vk_buffer::vk_buffer (vk_buffer&& other) noexcept
@@ -685,7 +682,7 @@ vk_buffer::~vk_buffer () noexcept
 {
     printf ("vk_buffer::~vk_buffer\n");
 
-    if (buffer != VK_NULL_HANDLE)
+    if (buffer != VK_NULL_HANDLE && device != VK_NULL_HANDLE)
     {
         vkDestroyBuffer (device, buffer, nullptr);
     }
@@ -700,7 +697,11 @@ void vk_buffer::bind_memory (const VkDeviceMemory& device_memory, const VkDevice
     }
 }
 
-vk_device_memory::vk_device_memory (const VkDevice& device, const VkBuffer& buffer, const VkPhysicalDeviceMemoryProperties& memory_properties, const VkMemoryPropertyFlags required_types)
+vk_device_memory::vk_device_memory (
+    const VkDevice& device, 
+    const VkBuffer& buffer, 
+    const VkPhysicalDeviceMemoryProperties& memory_properties, 
+    const VkMemoryPropertyFlags required_types) : device (device)
 {
     printf ("vk_device_memory::vk_device_memory\n");
 
@@ -731,8 +732,6 @@ vk_device_memory::vk_device_memory (const VkDevice& device, const VkBuffer& buff
     {
         throw AGE_RESULT::ERROR_SYSTEM_ALLOCATE_MEMORY;
     }
-
-    this->device = device;
 }
 
 vk_device_memory::vk_device_memory (vk_device_memory&& other) noexcept
@@ -759,7 +758,7 @@ vk_device_memory::~vk_device_memory () noexcept
 {
     printf ("vk_device_memory::~vk_device_memory\n");
 
-    if (memory != VK_NULL_HANDLE)
+    if (memory != VK_NULL_HANDLE && device != VK_NULL_HANDLE)
     {
         vkFreeMemory (device, memory, nullptr);
     }
@@ -792,7 +791,10 @@ void vk_device_memory::unmap ()
     vkUnmapMemory (device, memory);
 }
 
-vk_command_buffers::vk_command_buffers (const VkDevice& device, const VkCommandPool& command_pool, const uint32_t& command_buffer_count)
+vk_command_buffers::vk_command_buffers (
+    const VkDevice& device, 
+    const VkCommandPool& command_pool, 
+    const uint32_t& command_buffer_count) : command_pool (command_pool), device (device)
 {
     printf ("vk_command_buffers::vk_command_buffers\n");
 
@@ -811,9 +813,6 @@ vk_command_buffers::vk_command_buffers (const VkDevice& device, const VkCommandP
     {
         throw AGE_RESULT::ERROR_GRAPHICS_ALLOCATE_COMMAND_BUFFERS;
     }
-
-    this->command_pool = command_pool;
-    this->device = device;
 }
 
 vk_command_buffers::vk_command_buffers (vk_command_buffers&& other) noexcept
@@ -841,7 +840,7 @@ vk_command_buffers::~vk_command_buffers () noexcept
 {
     printf ("vk_command_buffers::~vk_command_buffers\n");
 
-    if (command_buffers.size () > 0)
+    if (command_buffers.size () > 0 && device != VK_NULL_HANDLE)
     {
         vkFreeCommandBuffers (device, command_pool, command_buffers.size (), command_buffers.data ());
     }
@@ -882,17 +881,61 @@ void vk_command_buffers::end ()
     }
 }
 
-vk_mesh::vk_mesh ()
+vk_image::vk_image (const VkDevice& device, const image& img) : device (device)
 {
-    printf ("vk_mesh::vk_mesh\n");
+    printf ("vk_image::vk_iamge\n");
 
-    positions = std::vector<float>{ -1.f,-1.f, 1.f,-1.f, 1.f,1.f, -1.f,1.f };
-    uvs = std::vector<float>{ 1,1, 0,1, 0,0, 1,0 };
+    VkImageCreateInfo create_info = {
+        VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+        nullptr,
+        0,
+        VK_IMAGE_TYPE_2D,
+        VK_FORMAT_R8G8B8A8_UNORM,
+        {img.width, img.height, 1},
+        1,
+        1,
+        VK_SAMPLE_COUNT_1_BIT,
+        VK_IMAGE_TILING_OPTIMAL,
+        VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+        VK_SHARING_MODE_EXCLUSIVE,
+        0,
+        nullptr,
+        VK_IMAGE_LAYOUT_UNDEFINED
+    };
 
-    indices = std::vector<uint32_t>{ 0,1,2, 0,2,3 };
+    VkResult result = vkCreateImage (device, &create_info, nullptr, &vk_img_obj);
+    if (result != VK_SUCCESS)
+    {
+        throw AGE_RESULT::ERROR_GRAPHICS_CREATE_IMAGE;
+    }
+}
 
-    positions_size = (VkDeviceSize)positions.size () * sizeof (positions[0]);
-    uvs_size = (VkDeviceSize)uvs.size () * sizeof (uvs[0]);
+vk_image::vk_image (vk_image&& other) noexcept
+{
+    printf ("vk_image move ctor\n");
 
-    indices_size = (VkDeviceSize)indices.size () * sizeof (indices[0]);
+    *this = std::move (other);
+}
+
+vk_image& vk_image::operator=(vk_image&& other) noexcept
+{
+    printf ("vk_image move assignment\n");
+
+    vk_img_obj = other.vk_img_obj;
+    device = other.device;
+
+    other.vk_img_obj = VK_NULL_HANDLE;
+    other.device = VK_NULL_HANDLE;
+
+    return *this;
+}
+
+vk_image::~vk_image () noexcept
+{
+    printf ("vk_image::~vk_image\n");
+
+    if (vk_img_obj != VK_NULL_HANDLE && device != VK_NULL_HANDLE)
+    {
+        vkDestroyImage (device, vk_img_obj, nullptr);
+    }
 }

@@ -6,6 +6,9 @@
 #include <Windows.h>
 #include <memory>
 #include <vector>
+#include <string>
+
+#include "utils.hpp"
 
 class vk_instance
 {
@@ -311,18 +314,23 @@ private:
 };
 
 
-class vk_mesh
+class vk_image
 {
 public:
-    vk_mesh ();
-    
-    std::vector<float> positions;
-    std::vector<float> uvs;
+    vk_image () {}
+    vk_image (const VkDevice& device, const image& img);
 
-    std::vector<uint32_t> indices;
+    vk_image (const vk_image& other) = delete;
+    vk_image& operator= (const vk_image& other) = delete;
 
-    VkDeviceSize positions_size;
-    VkDeviceSize uvs_size;
-    VkDeviceSize indices_size;
+    vk_image (vk_image&& other) noexcept;
+    vk_image& operator= (vk_image&& other) noexcept;
+
+    ~vk_image () noexcept;
+
+    VkImage vk_img_obj;
+
+private:
+    VkDevice device;
 };
 #endif 

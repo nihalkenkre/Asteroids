@@ -7,7 +7,7 @@ AGE_RESULT vk_create_buffer (const uint32_t size, const VkBufferUsageFlags usage
 
 AGE_RESULT vk_allocate_bind_buffer_memory (const VkBuffer buffer, const uint32_t required_types, VkDeviceMemory* out_buffer_memory);
 
-AGE_RESULT vk_map_buffer_memory (const VkDeviceMemory memory, const uint32_t offset, const uint32_t size, void** mapped_memory_ptr);
+AGE_RESULT vk_map_memory (const VkDeviceMemory memory, const uint32_t offset, const uint32_t size, void** mapped_memory_ptr);
 
 void vk_copy_data_to_memory_mapped_ptr (uint32_t offset, void* data, uint32_t size, void* mapped_memory_ptr);
 

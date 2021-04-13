@@ -56,7 +56,7 @@ AGE_RESULT vk_allocate_bind_buffer_memory (const VkBuffer buffer, const uint32_t
 	return AGE_RESULT::SUCCESS;
 }
 
-AGE_RESULT vk_map_buffer_memory (const VkDeviceMemory memory, const uint32_t offset, const uint32_t size, void** mapped_memory_ptr)
+AGE_RESULT vk_map_memory (const VkDeviceMemory memory, const uint32_t offset, const uint32_t size, void** mapped_memory_ptr)
 {
 	VkResult vk_result = vkMapMemory (device, memory, offset, size, 0, mapped_memory_ptr);
 

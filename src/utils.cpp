@@ -21,6 +21,56 @@
 #include <android/log.h>
 #endif
 
+full_file_path::full_file_path (const std::string& partial_file_path)
+{
+	char path[MAX_PATH];
+
+	wchar_t t_path[MAX_PATH];
+	HMODULE module = GetModuleHandle (NULL);
+	GetModuleFileName (module, t_path, MAX_PATH);
+	PathRemoveFileSpec (t_path);
+
+	char out_path[MAX_PATH];
+
+	wcstombs_s (NULL, path, MAX_PATH, t_path, MAX_PATH);
+	strcpy (out_path, path);
+	strcat (out_path, "\\");
+	strcat (out_path, partial_file_path.c_str ());
+
+	this->path = std::string (out_path);
+}
+
+
+mesh::mesh ()
+{
+	printf ("mesh::mesh\n");
+
+	positions = std::vector<float>{ -1.f,-1.f, 1.f,-1.f, 1.f,1.f, -1.f,1.f };
+	uvs = std::vector<float>{ 1,1, 0,1, 0,0, 1,0 };
+
+	indices = std::vector<uint32_t>{ 0,1,2, 0,2,3 };
+
+	positions_size = positions.size () * sizeof (positions[0]);
+	uvs_size = uvs.size () * sizeof (uvs[0]);
+
+	indices_size = indices.size () * sizeof (indices[0]);
+}
+
+
+image::image (const std::string& partial_file_path)
+{
+	printf ("image::image\n");
+
+	full_file_path ffp (partial_file_path);
+	uint8_t* p = stbi_load (ffp.path.c_str (), &(int)width, &(int)height, &(int)bpp, 4);
+
+	pixels.resize (width * height * bpp);
+	std::memcpy (pixels.data (), p, pixels.size ());
+
+	stbi_image_free (p);
+}
+
+
 #ifdef WIN32
 void utils_get_full_texture_path_from_uri (const char* file_path, const char* uri, char* out_full_texture_path)
 {
@@ -154,3 +204,5 @@ void utils_free (void* ptr)
 		ptr = nullptr;
 	}
 }
+
+
