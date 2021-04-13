@@ -47,7 +47,7 @@ vk_instance::vk_instance () : instance (VK_NULL_HANDLE)
 
 vk_instance::vk_instance (vk_instance&& other) noexcept
 {
-    printf ("vk_instance move constructor\n");
+    printf ("vk_instance move ctor\n");
 
     *this = std::move (other);
 }
@@ -93,7 +93,6 @@ vk_physical_device::vk_physical_device (const VkInstance& instance)
 
     physical_device = physical_devices[0];
 
-    VkPhysicalDeviceMemoryProperties memory_properties;
     vkGetPhysicalDeviceMemoryProperties (physical_device, &memory_properties);
     VkPhysicalDeviceProperties device_properties;
     vkGetPhysicalDeviceProperties (physical_device, &device_properties);
@@ -207,7 +206,6 @@ vk_surface::vk_surface (const VkInstance& instance,
     {
         throw AGE_RESULT::ERROR_GRAPHICS_SURFACE_CAPABILITIES;
     }
-    extent = capabilities.currentExtent;
     
     uint32_t format_count = 0;
     result = vkGetPhysicalDeviceSurfaceFormatsKHR (physical_device, surface, &format_count, nullptr);
@@ -276,7 +274,7 @@ vk_surface::vk_surface (const VkInstance& instance,
 
 vk_surface::vk_surface (vk_surface&& other) noexcept
 {
-    printf ("vk_surface move constructor\n");
+    printf ("vk_surface move ctor\n");
 
     *this = std::move (other);
 }
@@ -286,6 +284,10 @@ vk_surface& vk_surface::operator= (vk_surface&& other) noexcept
     printf ("vk_surface move assignment\n");
 
     surface = other.surface;
+    present_mode = other.present_mode;
+    capabilities = other.capabilities;
+    format = other.format;
+
     instance = other.instance;
 
     other.surface = VK_NULL_HANDLE;
@@ -304,14 +306,14 @@ vk_surface::~vk_surface () noexcept
     }
 }
 
-vk_queue_info::vk_queue_info (const vk_queue_family_indices* queue_family_indices)
+vk_queue_info::vk_queue_info (const vk_queue_family_indices& queue_family_indices)
 {
     printf ("vk_queue_info::vk_queue_info\n");
 
     std::vector<uint32_t> family_indices = { 
-                                            queue_family_indices->graphics_queue_family_index, 
-                                            queue_family_indices->compute_queue_family_index, 
-                                            queue_family_indices->transfer_queue_family_index
+                                            queue_family_indices.graphics_queue_family_index, 
+                                            queue_family_indices.compute_queue_family_index, 
+                                            queue_family_indices.transfer_queue_family_index
                                         };
 
     std::map<uint32_t, uint32_t> family_indices_queue_count;
@@ -375,7 +377,7 @@ vk_graphics_device::vk_graphics_device (const VkPhysicalDevice& physical_device,
 
 vk_graphics_device::vk_graphics_device (vk_graphics_device&& other) noexcept
 {
-    printf ("vk_device::move constructor\n");
+    printf ("vk_device::move ctor\n");
 
     *this = std::move (other);
 }
@@ -406,9 +408,30 @@ vk_queue::vk_queue (const VkQueue& queue, const VkDevice& device) : queue (queue
 
 }
 
+void vk_queue::submit (const std::vector<VkCommandBuffer>& commands_buffers)
+{
+    VkSubmitInfo submit_info = {
+        VK_STRUCTURE_TYPE_SUBMIT_INFO,
+        nullptr,
+        0,
+        nullptr,
+        0,
+        commands_buffers.size (),
+        commands_buffers.data (),
+        0,
+        nullptr
+    };
+    
+    VkResult vk_result = vkQueueSubmit (queue, 1, &submit_info, VK_NULL_HANDLE);
+    if (vk_result != VK_SUCCESS)
+    {
+        throw AGE_RESULT::ERROR_GRAPHICS_QUEUE_SUBMIT;
+    }
+}
+
 vk_device_queues::vk_device_queues (const VkPhysicalDevice& physical_device, 
                       const VkDevice& device, 
-                      const vk_queue_family_indices* queue_family_indices, 
+                      const vk_queue_family_indices& queue_family_indices, 
                       const std::vector<uint32_t>& queue_indices)
 
 {
@@ -418,23 +441,23 @@ vk_device_queues::vk_device_queues (const VkPhysicalDevice& physical_device,
     vkGetPhysicalDeviceQueueFamilyProperties (physical_device, &property_count, queue_family_properties.data ());
 
     uint32_t graphics_queue_index = 0;
-	uint32_t compute_queue_index = queue_family_indices->graphics_queue_family_index == queue_family_indices->compute_queue_family_index ? 1 : 0;
-	uint32_t transfer_queue_index = queue_family_indices->transfer_queue_family_index == queue_family_indices->compute_queue_family_index ? compute_queue_index + 1 : 0;
+	uint32_t compute_queue_index = queue_family_indices.graphics_queue_family_index == queue_family_indices.compute_queue_family_index ? 1 : 0;
+	uint32_t transfer_queue_index = queue_family_indices.transfer_queue_family_index == queue_family_indices.compute_queue_family_index ? compute_queue_index + 1 : 0;
 
     VkQueue graphics_queue;
     VkQueue compute_queue;
     VkQueue transfer_queue;
 
-	vkGetDeviceQueue (device, queue_family_indices->graphics_queue_family_index, graphics_queue_index, &graphics_queue);
-	vkGetDeviceQueue (device, queue_family_indices->compute_queue_family_index, compute_queue_index, &compute_queue);
-	vkGetDeviceQueue (device, queue_family_indices->transfer_queue_family_index, transfer_queue_index, &transfer_queue);
+	vkGetDeviceQueue (device, queue_family_indices.graphics_queue_family_index, graphics_queue_index, &graphics_queue);
+	vkGetDeviceQueue (device, queue_family_indices.compute_queue_family_index, compute_queue_index, &compute_queue);
+	vkGetDeviceQueue (device, queue_family_indices.transfer_queue_family_index, transfer_queue_index, &transfer_queue);
 
     this->graphics_queue = std::make_unique<vk_queue> (graphics_queue, device);
     this->compute_queue = std::make_unique<vk_queue> (compute_queue, device);
     this->transfer_queue = std::make_unique<vk_queue> (transfer_queue, device);
 }
 
-vk_swapchain::vk_swapchain (const VkDevice& device, const vk_surface* surface)
+vk_swapchain::vk_swapchain (const VkDevice& device, const vk_surface& surface)
 {
     printf ("vk_swapchain::vk_swapchain\n");
 
@@ -442,19 +465,19 @@ vk_swapchain::vk_swapchain (const VkDevice& device, const vk_surface* surface)
         VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
         nullptr,
         0,
-        surface->surface,
-        surface->capabilities.minImageCount + 1,
-        surface->format.format,
-        surface->format.colorSpace,
-        surface->extent,
+        surface.surface,
+        surface.capabilities.minImageCount + 1,
+        surface.format.format,
+        surface.format.colorSpace,
+        surface.capabilities.currentExtent,
         1,
-        surface->capabilities.supportedUsageFlags,
+        surface.capabilities.supportedUsageFlags,
         VK_SHARING_MODE_EXCLUSIVE,
         0,
         {},
-        surface->capabilities.currentTransform,
+        surface.capabilities.currentTransform,
         VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
-        surface->present_mode
+        surface.present_mode
     };
 
     VkResult result = vkCreateSwapchainKHR (device, &create_info, nullptr, &swapchain);
@@ -469,7 +492,7 @@ vk_swapchain::vk_swapchain (const VkDevice& device, const vk_surface* surface)
 
 vk_swapchain::vk_swapchain (vk_swapchain&& other) noexcept
 {
-    printf ("vk_swapchain move constructor\n");
+    printf ("vk_swapchain move ctor\n");
 
     *this = std::move (other);
 }
@@ -502,6 +525,8 @@ vk_command_pool::vk_command_pool (const VkDevice& device,
                                     const VkCommandPoolCreateFlags& flags
                                 )
 {
+    printf ("vk_command_pool::vk_command_pool\n");
+
     VkCommandPoolCreateInfo create_info = {
         VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
         nullptr,
@@ -510,7 +535,7 @@ vk_command_pool::vk_command_pool (const VkDevice& device,
     };
     
     VkResult result = vkCreateCommandPool (device, &create_info, nullptr, &command_pool);
-    if (result != VK_NULL_HANDLE)
+    if (result != VK_SUCCESS)
     {
         throw AGE_RESULT::ERROR_GRAPHICS_CREATE_COMMAND_POOL;
     }
@@ -520,11 +545,13 @@ vk_command_pool::vk_command_pool (const VkDevice& device,
 
 vk_command_pool::vk_command_pool (vk_command_pool&& other) noexcept
 {
+    printf ("vk_command_pool move ctor\n");
     *this = std::move (other);
 }
 
 vk_command_pool& vk_command_pool::operator= (vk_command_pool&& other) noexcept
 {
+    printf ("vk_command_pool move assignment\n");
     command_pool = other.command_pool;
     device = other.device;
 
@@ -536,6 +563,7 @@ vk_command_pool& vk_command_pool::operator= (vk_command_pool&& other) noexcept
 
 vk_command_pool::~vk_command_pool () noexcept
 {
+    printf ("vk_command_pool::~vk_command_pool\n");
     if (command_pool != VK_NULL_HANDLE)
     {
         vkDestroyCommandPool (device, command_pool, nullptr);
@@ -544,6 +572,8 @@ vk_command_pool::~vk_command_pool () noexcept
 
 vk_sampler::vk_sampler (const VkDevice& device)
 {
+    printf ("vk_sampler::vk_sampler\n");
+
     VkSamplerCreateInfo create_info = {
         VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
         nullptr,
@@ -577,11 +607,15 @@ vk_sampler::vk_sampler (const VkDevice& device)
 
 vk_sampler::vk_sampler (vk_sampler&& other) noexcept
 {
+    printf ("vk_sampler move ctor\n");
+
     *this = std::move (other);
 }
 
 vk_sampler& vk_sampler::operator= (vk_sampler&& other) noexcept
 {
+    printf ("vk_sampler move assignment\n");
+
     sampler = other.sampler;
     device = other.device;
 
@@ -593,6 +627,8 @@ vk_sampler& vk_sampler::operator= (vk_sampler&& other) noexcept
 
 vk_sampler::~vk_sampler () noexcept
 {
+    printf ("vk_sampler::~vk_sampler\n");
+    
     if (sampler != VK_NULL_HANDLE)
     {
         vkDestroySampler (device, sampler, nullptr);
@@ -601,6 +637,8 @@ vk_sampler::~vk_sampler () noexcept
 
 vk_buffer::vk_buffer (const VkDevice& device, const VkDeviceSize& size, const VkBufferUsageFlags usage_flags, const VkSharingMode& sharing_mode, const uint32_t& queue_family_index)
 {
+    printf ("vk_buffer::vk_buffer\n");
+
     VkBufferCreateInfo create_info = {
         VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
         nullptr,
@@ -611,15 +649,27 @@ vk_buffer::vk_buffer (const VkDevice& device, const VkDeviceSize& size, const Vk
         1,
         &queue_family_index
     };
+
+    VkResult result = vkCreateBuffer (device, &create_info, nullptr, &buffer);
+
+    if (result != VK_SUCCESS)
+    {
+        throw AGE_RESULT::ERROR_GRAPHICS_CREATE_BUFFER;
+    }
+
+    this->device = device;
 }
 
 vk_buffer::vk_buffer (vk_buffer&& other) noexcept
 {
+    printf ("vk_buffer move ctor\n");
     *this = std::move (other);
 }
 
 vk_buffer& vk_buffer::operator=(vk_buffer&& other) noexcept
 {
+    printf ("vk_buffer move assignment\n");
+
     buffer = other.buffer;
     device = other.device;
 
@@ -631,6 +681,8 @@ vk_buffer& vk_buffer::operator=(vk_buffer&& other) noexcept
 
 vk_buffer::~vk_buffer () noexcept
 {
+    printf ("vk_buffer::~vk_buffer\n");
+
     if (buffer != VK_NULL_HANDLE)
     {
         vkDestroyBuffer (device, buffer, nullptr);
@@ -648,6 +700,8 @@ void vk_buffer::bind_memory (const VkDeviceMemory& device_memory, const VkDevice
 
 vk_device_memory::vk_device_memory (const VkDevice& device, const VkBuffer& buffer, const VkPhysicalDeviceMemoryProperties& memory_properties, const VkMemoryPropertyFlags required_types)
 {
+    printf ("vk_device_memory::vk_device_memory\n");
+
     VkMemoryRequirements memory_requirements;
     vkGetBufferMemoryRequirements (device, buffer, &memory_requirements);
 
@@ -671,7 +725,7 @@ vk_device_memory::vk_device_memory (const VkDevice& device, const VkBuffer& buff
 
     VkResult result = vkAllocateMemory (device, &allocate_info, nullptr, &memory);
 
-    if (result != VK_NULL_HANDLE)
+    if (result != VK_SUCCESS)
     {
         throw AGE_RESULT::ERROR_SYSTEM_ALLOCATE_MEMORY;
     }
@@ -681,11 +735,15 @@ vk_device_memory::vk_device_memory (const VkDevice& device, const VkBuffer& buff
 
 vk_device_memory::vk_device_memory (vk_device_memory&& other) noexcept
 {
+    printf ("vk_device_memory move ctor\n");
+
     *this = std::move (other);
 }
 
-vk_device_memory& vk_device_memory::operator=(vk_device_memory&& other) noexcept
+vk_device_memory& vk_device_memory::operator= (vk_device_memory&& other) noexcept
 {
+    printf ("vk_device_memory move assignment\n");
+
     memory = other.memory;
     device = other.device;
 
@@ -697,6 +755,8 @@ vk_device_memory& vk_device_memory::operator=(vk_device_memory&& other) noexcept
 
 vk_device_memory::~vk_device_memory () noexcept
 {
+    printf ("vk_device_memory::~vk_device_memory\n");
+
     if (memory != VK_NULL_HANDLE)
     {
         vkFreeMemory (device, memory, nullptr);
@@ -717,7 +777,7 @@ HANDLE vk_device_memory::map (const VkDeviceSize& offset, const VkDeviceSize& si
     HANDLE data = nullptr;
     
     VkResult result = vkMapMemory (device, memory, offset, size, 0, &data);
-    if (result != VK_NULL_HANDLE)
+    if (result != VK_SUCCESS)
     {
         throw AGE_RESULT::ERROR_GRAPHICS_MAP_MEMORY;
     }
@@ -732,6 +792,8 @@ void vk_device_memory::unmap ()
 
 vk_command_buffers::vk_command_buffers (const VkDevice& device, const VkCommandPool& command_pool, const uint32_t& command_buffer_count)
 {
+    printf ("vk_command_buffers::vk_command_buffers\n");
+
     VkCommandBufferAllocateInfo allocate_info = {
         VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
         nullptr,
@@ -743,7 +805,7 @@ vk_command_buffers::vk_command_buffers (const VkDevice& device, const VkCommandP
     command_buffers.reserve (command_buffer_count);
 
     VkResult result = vkAllocateCommandBuffers (device, &allocate_info, command_buffers.data ());
-    if (result != VK_NULL_HANDLE)
+    if (result != VK_SUCCESS)
     {
         throw AGE_RESULT::ERROR_GRAPHICS_ALLOCATE_COMMAND_BUFFERS;
     }
@@ -754,11 +816,15 @@ vk_command_buffers::vk_command_buffers (const VkDevice& device, const VkCommandP
 
 vk_command_buffers::vk_command_buffers (vk_command_buffers&& other) noexcept
 {
+    printf ("vk_command_buffers move ctor\n");
+
     *this = std::move (other);
 }
 
-vk_command_buffers& vk_command_buffers::operator=(vk_command_buffers&& other) noexcept
+vk_command_buffers& vk_command_buffers::operator= (vk_command_buffers&& other) noexcept
 {
+    printf ("vk_command_buffers move assignment\n");
+
     command_buffers = std::move (other.command_buffers);
     command_pool = other.command_pool;
     device = other.device;
@@ -771,8 +837,60 @@ vk_command_buffers& vk_command_buffers::operator=(vk_command_buffers&& other) no
 
 vk_command_buffers::~vk_command_buffers () noexcept
 {
+    printf ("vk_command_buffers::~vk_command_buffers\n");
+
     if (command_buffers.size () > 0)
     {
         vkFreeCommandBuffers (device, command_pool, command_buffers.size (), command_buffers.data ());
     }
+}
+
+void vk_command_buffers::begin (const VkCommandBufferUsageFlags& flags)
+{
+    VkCommandBufferBeginInfo begin_info = {
+        VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+        nullptr,
+        flags,
+        nullptr
+    };
+
+    VkResult result = VK_SUCCESS;
+
+    for (auto command_buffer : command_buffers)
+    {
+        result = vkBeginCommandBuffer (command_buffer, &begin_info);
+        if (result != VK_SUCCESS)
+        {
+            throw AGE_RESULT::ERROR_GRAPHICS_BEGIN_COMMAND_BUFFER;
+        }
+    }
+}
+
+void vk_command_buffers::end ()
+{
+    VkResult result = VK_SUCCESS;
+
+    for (auto command_buffer : command_buffers)
+    {
+        result = vkEndCommandBuffer (command_buffer);
+        if (result != VK_SUCCESS)
+        {
+            throw AGE_RESULT::ERROR_GRAPHICS_END_COMMAND_BUFFER;
+        }
+    }
+}
+
+vk_mesh::vk_mesh ()
+{
+    printf ("vk_mesh::vk_mesh\n");
+
+    positions = std::vector<float>{ -1.f,-1.f, 1.f,-1.f, 1.f,1.f, -1.f,1.f };
+    uvs = std::vector<float>{ 1,1, 0,1, 0,0, 1,0 };
+
+    indices = std::vector<uint32_t>{ 0,1,2, 0,2,3 };
+
+    positions_size = (VkDeviceSize)positions.size () * sizeof (positions[0]);
+    uvs_size = (VkDeviceSize)uvs.size () * sizeof (uvs[0]);
+
+    indices_size = (VkDeviceSize)indices.size () * sizeof (indices[0]);
 }

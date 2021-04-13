@@ -70,7 +70,6 @@ public:
     VkPresentModeKHR present_mode;
     VkSurfaceCapabilitiesKHR capabilities;
     VkSurfaceFormatKHR format;
-    VkExtent2D extent;
 
 private:
     VkInstance instance;
@@ -81,7 +80,7 @@ class vk_queue_info
 {
 public:
     vk_queue_info () {}
-    vk_queue_info (const vk_queue_family_indices* queue_family_indices);
+    vk_queue_info (const vk_queue_family_indices& queue_family_indices);
 
     std::vector<VkDeviceQueueCreateInfo> queue_create_infos;
     std::vector<uint32_t> queue_indices;
@@ -113,6 +112,8 @@ public:
     vk_queue () {}
     vk_queue (const VkQueue& queue, const VkDevice& device);
     
+    void submit (const std::vector<VkCommandBuffer>& commands_buffers);
+
     VkQueue queue;
 
 private:
@@ -126,7 +127,7 @@ public:
     vk_device_queues () {}
     vk_device_queues (const VkPhysicalDevice& physical_device, 
                       const VkDevice& device, 
-                      const vk_queue_family_indices* queue_family_indices, 
+                      const vk_queue_family_indices& queue_family_indices, 
                       const std::vector<uint32_t>& queue_indices);
 
     std::unique_ptr<vk_queue> graphics_queue;
@@ -146,7 +147,7 @@ class vk_swapchain
 {
 public:
     vk_swapchain () {}
-    vk_swapchain (const VkDevice& device, const vk_surface* surface);
+    vk_swapchain (const VkDevice& device, const vk_surface& surface);
     
     vk_swapchain (const vk_swapchain& other) = delete;
     vk_swapchain& operator= (const vk_swapchain& other) = delete;
@@ -299,7 +300,7 @@ public:
 
     ~vk_command_buffers () noexcept;
 
-    void begin ();
+    void begin (const VkCommandBufferUsageFlags& flags);
     void end ();
 
     std::vector<VkCommandBuffer> command_buffers;
@@ -309,4 +310,19 @@ private:
     VkDevice device;    
 };
 
+
+class vk_mesh
+{
+public:
+    vk_mesh ();
+    
+    std::vector<float> positions;
+    std::vector<float> uvs;
+
+    std::vector<uint32_t> indices;
+
+    VkDeviceSize positions_size;
+    VkDeviceSize uvs_size;
+    VkDeviceSize indices_size;
+};
 #endif 

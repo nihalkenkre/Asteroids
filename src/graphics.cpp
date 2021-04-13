@@ -106,9 +106,7 @@ AGE_RESULT graphics_create_geometry_buffers ()
 	age_result = vk_map_buffer_memory (
 		staging_vertex_index_memory,
 		0,
-		(VkDeviceSize)actor_positions_size +
-		(VkDeviceSize)actor_uvs_size +
-		(VkDeviceSize)actor_indices_size,
+		size,
 		&mapped_memory_ptr
 	);
 	if (age_result != AGE_RESULT::SUCCESS)
@@ -150,9 +148,7 @@ AGE_RESULT graphics_create_geometry_buffers ()
 	buffer_copy = {
 		0,
 		0,
-		(VkDeviceSize)actor_positions_size +
-		(VkDeviceSize)actor_uvs_size +
-		(VkDeviceSize)actor_indices_size,
+		size
 	};
 
 	vkCmdCopyBuffer (copy_cmd_buffer, staging_vertex_index_buffer, vertex_index_buffer, 1, &buffer_copy);
