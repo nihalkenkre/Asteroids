@@ -110,7 +110,7 @@ class vk_queue
 {
 public:
     vk_queue () {}
-    vk_queue (const VkQueue& queue, const VkDevice& device);
+    vk_queue (const VkDevice& device, const VkQueue& queue);
     
     void submit (const std::vector<VkCommandBuffer>& commands_buffers);
 
@@ -130,9 +130,9 @@ public:
                       const vk_queue_family_indices& queue_family_indices, 
                       const std::vector<uint32_t>& queue_indices);
 
-    std::unique_ptr<vk_queue> graphics_queue;
-    std::unique_ptr<vk_queue> compute_queue;
-    std::unique_ptr<vk_queue> transfer_queue;                      
+    vk_queue graphics_queue;
+    vk_queue compute_queue;
+    vk_queue transfer_queue;                      
 };
 
 

@@ -3,7 +3,7 @@
 #include <cstdio>
 
 
-scene::scene (const common_graphics* common_graphics_obj)
+scene::scene (common_graphics* common_graphics_obj)
 {
     printf ("scene::scene\n");
 

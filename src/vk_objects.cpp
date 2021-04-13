@@ -403,9 +403,9 @@ vk_graphics_device::~vk_graphics_device () noexcept
     }
 }
 
-vk_queue::vk_queue (const VkQueue& queue, const VkDevice& device) : queue (queue), device (device)
+vk_queue::vk_queue (const VkDevice& device, const VkQueue& queue) : device (device), queue (queue)
 {
-
+    printf ("vk_queue::vk_queue\n");
 }
 
 void vk_queue::submit (const std::vector<VkCommandBuffer>& commands_buffers)
@@ -435,6 +435,8 @@ vk_device_queues::vk_device_queues (const VkPhysicalDevice& physical_device,
                       const std::vector<uint32_t>& queue_indices)
 
 {
+    printf ("vk_device_queues::vk_device_queues\n");
+
     uint32_t property_count = 0;
     vkGetPhysicalDeviceQueueFamilyProperties (physical_device, &property_count, nullptr);
     std::vector<VkQueueFamilyProperties> queue_family_properties (property_count);
@@ -452,9 +454,9 @@ vk_device_queues::vk_device_queues (const VkPhysicalDevice& physical_device,
 	vkGetDeviceQueue (device, queue_family_indices.compute_queue_family_index, compute_queue_index, &compute_queue);
 	vkGetDeviceQueue (device, queue_family_indices.transfer_queue_family_index, transfer_queue_index, &transfer_queue);
 
-    this->graphics_queue = std::make_unique<vk_queue> (graphics_queue, device);
-    this->compute_queue = std::make_unique<vk_queue> (compute_queue, device);
-    this->transfer_queue = std::make_unique<vk_queue> (transfer_queue, device);
+    this->graphics_queue = vk_queue (device, graphics_queue);
+    this->compute_queue = vk_queue (device, compute_queue);
+    this->transfer_queue = vk_queue (device, transfer_queue);
 }
 
 vk_swapchain::vk_swapchain (const VkDevice& device, const vk_surface& surface)
@@ -802,7 +804,7 @@ vk_command_buffers::vk_command_buffers (const VkDevice& device, const VkCommandP
         command_buffer_count
     };
 
-    command_buffers.reserve (command_buffer_count);
+    command_buffers.resize (command_buffer_count);
 
     VkResult result = vkAllocateCommandBuffers (device, &allocate_info, command_buffers.data ());
     if (result != VK_SUCCESS)

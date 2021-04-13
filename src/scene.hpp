@@ -9,7 +9,7 @@
 class scene
 {
 public:
-    scene (const common_graphics* common_graphics_obj);
+    scene (common_graphics* common_graphics_obj);
 
 private:
     std::unique_ptr<scene_graphics> scene_graphics_obj;
