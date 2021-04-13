@@ -74,7 +74,7 @@ AGE_RESULT log_error (const AGE_RESULT result)
 		break;
 
 	case AGE_RESULT::ERROR_GRAPHICS_MAP_MEMORY:
-		printf ("Graphics Error: Map Image Memory\n");
+		printf ("Graphics Error: Map Memory\n");
 		break;
 
 	case AGE_RESULT::ERROR_GRAPHICS_CREATE_DESCRIPTOR_SET_LAYOUT:
@@ -121,7 +121,7 @@ AGE_RESULT log_error (const AGE_RESULT result)
 		printf ("Graphics Error: Reset Command Pool\n");
 		break;
 
-	case AGE_RESULT::ERROR_GRAPHICS_ALLOCATE_COMMAND_BUFFER:
+	case AGE_RESULT::ERROR_GRAPHICS_ALLOCATE_COMMAND_BUFFERS:
 		printf ("Graphics Error: Allocate Command buffer\n");
 		break;
 

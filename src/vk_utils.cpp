@@ -86,7 +86,7 @@ AGE_RESULT vk_allocate_command_buffers (const VkCommandPool cmd_pool, VkCommandB
 	VkResult vk_result = vkAllocateCommandBuffers (device, &copy_cmd_buffer_allocate_info, out_cmd_buffers);
 	if (vk_result != VK_SUCCESS)
 	{
-		return AGE_RESULT::ERROR_GRAPHICS_ALLOCATE_COMMAND_BUFFER;
+		return AGE_RESULT::ERROR_GRAPHICS_ALLOCATE_COMMAND_BUFFERS;
 	}
 
 	return AGE_RESULT::SUCCESS;

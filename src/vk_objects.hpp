@@ -23,16 +23,18 @@ public:
     VkInstance instance;
 };
 
+
 class vk_physical_device
 {
 public:
     vk_physical_device () {}
-    vk_physical_device(const VkInstance& instance);
+    vk_physical_device (const VkInstance& instance);
 
     VkPhysicalDevice physical_device;
     VkPhysicalDeviceMemoryProperties memory_properties;
     VkPhysicalDeviceLimits limits;
 };
+
 
 class vk_queue_family_indices
 {
@@ -44,6 +46,7 @@ public:
     uint32_t compute_queue_family_index;
     uint32_t transfer_queue_family_index;
 };
+
 
 class vk_surface
 {
@@ -73,6 +76,7 @@ private:
     VkInstance instance;
 };
 
+
 class vk_queue_info
 {
 public:
@@ -82,6 +86,7 @@ public:
     std::vector<VkDeviceQueueCreateInfo> queue_create_infos;
     std::vector<uint32_t> queue_indices;
 };
+
 
 class vk_graphics_device
 {
@@ -101,6 +106,7 @@ public:
     VkDevice graphics_device;
 };
 
+
 class vk_queue
 {
 public:
@@ -112,6 +118,7 @@ public:
 private:
     VkDevice device;
 };
+
 
 class vk_device_queues
 {
@@ -127,11 +134,13 @@ public:
     std::unique_ptr<vk_queue> transfer_queue;                      
 };
 
+
 class vk_image_view
 {
 public:
     vk_image_view () {}
 };
+
 
 class vk_swapchain
 {
@@ -177,6 +186,127 @@ public:
 
 private:
     VkDevice device;
+};
+
+
+class vk_sampler
+{
+public:
+    vk_sampler () {}
+    vk_sampler (const VkDevice& device);
+
+    vk_sampler (const vk_sampler& other) = delete;
+    vk_sampler& operator= (const vk_sampler& other) = delete;
+
+    vk_sampler (vk_sampler&& other) noexcept;
+    vk_sampler& operator= (vk_sampler&& other) noexcept;
+
+    ~vk_sampler () noexcept;
+
+    VkSampler sampler;
+
+private:
+    VkDevice device;
+};
+
+
+class vk_buffer
+{
+public:
+    vk_buffer () {}
+    vk_buffer (
+        const VkDevice& device,
+        const VkDeviceSize& size,
+        const VkBufferUsageFlags usage_flags,
+        const VkSharingMode& sharing_mode,
+        const uint32_t& queue_family_index);
+
+    vk_buffer (const vk_buffer& other) = delete;
+    vk_buffer& operator= (const vk_buffer& other) = delete;
+
+    vk_buffer (vk_buffer&& other) noexcept;
+    vk_buffer& operator= (vk_buffer&& other) noexcept;
+
+    ~vk_buffer () noexcept;
+
+    void bind_memory (
+        const VkDeviceMemory& device_memory,
+        const VkDeviceSize& offset
+    );
+
+    void copy_from_buffer (
+        const VkBuffer& src_buffer,
+        const VkDeviceSize& size,
+        const VkCommandPool& command_pool,
+        const VkQueue& transfer_queue
+    );
+
+    void copy_to () {}
+
+    VkBuffer buffer;
+
+private:
+    VkDevice device;        
+};
+
+
+class vk_device_memory
+{
+public:
+    vk_device_memory () {}
+    vk_device_memory (
+        const VkDevice& device,
+        const VkBuffer& buffer,
+        const VkPhysicalDeviceMemoryProperties& memory_properties,
+        const VkMemoryPropertyFlags required_types
+    );
+
+    vk_device_memory (const vk_device_memory& other) = delete;
+    vk_device_memory& operator= (const vk_device_memory& other) = delete;
+
+    vk_device_memory (vk_device_memory&& other) noexcept;
+    vk_device_memory& operator= (vk_device_memory&& other) noexcept;
+
+    ~vk_device_memory () noexcept;
+
+    void bind_buffer (const VkBuffer& buffer, const VkDeviceSize& offset);
+
+    HANDLE map (const VkDeviceSize& offset, const VkDeviceSize& size);
+    void unmap ();
+
+    VkDeviceMemory memory;
+
+private:
+    VkDevice device;
+};
+
+
+class vk_command_buffers
+{
+public:
+    vk_command_buffers () {}
+    vk_command_buffers (
+        const VkDevice& device,
+        const VkCommandPool& command_pool,
+        const uint32_t& command_buffer_count
+    );
+
+    vk_command_buffers (const vk_command_buffers& other) = delete;
+    vk_command_buffers& operator= (const vk_command_buffers& other) = delete;
+
+    vk_command_buffers (vk_command_buffers&& other) noexcept;
+    vk_command_buffers& operator= (vk_command_buffers&& other) noexcept;
+
+    ~vk_command_buffers () noexcept;
+
+    void begin ();
+    void end ();
+
+    std::vector<VkCommandBuffer> command_buffers;
+
+private:
+    VkCommandPool command_pool;
+    VkDevice device;    
 };
 
 #endif 

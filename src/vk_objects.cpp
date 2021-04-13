@@ -541,3 +541,238 @@ vk_command_pool::~vk_command_pool () noexcept
         vkDestroyCommandPool (device, command_pool, nullptr);
     }
 }
+
+vk_sampler::vk_sampler (const VkDevice& device)
+{
+    VkSamplerCreateInfo create_info = {
+        VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+        nullptr,
+        0,
+        VK_FILTER_LINEAR,
+        VK_FILTER_LINEAR,
+        VK_SAMPLER_MIPMAP_MODE_LINEAR,
+        VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER,
+        VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER,
+        VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER,
+        0,
+        VK_FALSE,
+        0,
+        VK_FALSE,
+        VK_COMPARE_OP_NEVER,
+        0,
+        0,
+        VK_BORDER_COLOR_INT_OPAQUE_BLACK,
+        VK_FALSE
+    };
+
+    VkResult result = vkCreateSampler (device, &create_info, nullptr, &sampler);
+
+    if (result != VK_SUCCESS)
+    {
+        throw AGE_RESULT::ERROR_GRAPHICS_CREATE_SAMPLER;
+    }
+
+    this->device = device;
+}
+
+vk_sampler::vk_sampler (vk_sampler&& other) noexcept
+{
+    *this = std::move (other);
+}
+
+vk_sampler& vk_sampler::operator= (vk_sampler&& other) noexcept
+{
+    sampler = other.sampler;
+    device = other.device;
+
+    other.sampler = VK_NULL_HANDLE;
+    other.device = VK_NULL_HANDLE;
+
+    return *this;
+}
+
+vk_sampler::~vk_sampler () noexcept
+{
+    if (sampler != VK_NULL_HANDLE)
+    {
+        vkDestroySampler (device, sampler, nullptr);
+    }
+}
+
+vk_buffer::vk_buffer (const VkDevice& device, const VkDeviceSize& size, const VkBufferUsageFlags usage_flags, const VkSharingMode& sharing_mode, const uint32_t& queue_family_index)
+{
+    VkBufferCreateInfo create_info = {
+        VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+        nullptr,
+        0,
+        size,
+        usage_flags,
+        sharing_mode,
+        1,
+        &queue_family_index
+    };
+}
+
+vk_buffer::vk_buffer (vk_buffer&& other) noexcept
+{
+    *this = std::move (other);
+}
+
+vk_buffer& vk_buffer::operator=(vk_buffer&& other) noexcept
+{
+    buffer = other.buffer;
+    device = other.device;
+
+    other.buffer = VK_NULL_HANDLE;
+    other.device = VK_NULL_HANDLE;
+
+    return *this;
+}
+
+vk_buffer::~vk_buffer () noexcept
+{
+    if (buffer != VK_NULL_HANDLE)
+    {
+        vkDestroyBuffer (device, buffer, nullptr);
+    }
+}
+
+void vk_buffer::bind_memory (const VkDeviceMemory& device_memory, const VkDeviceSize& offset)
+{
+    VkResult result = vkBindBufferMemory (device, buffer, device_memory, offset);
+    if (result != VK_SUCCESS)
+    {
+        throw AGE_RESULT::ERROR_GRAPHICS_BIND_BUFFER_MEMORY;
+    }
+}
+
+vk_device_memory::vk_device_memory (const VkDevice& device, const VkBuffer& buffer, const VkPhysicalDeviceMemoryProperties& memory_properties, const VkMemoryPropertyFlags required_types)
+{
+    VkMemoryRequirements memory_requirements;
+    vkGetBufferMemoryRequirements (device, buffer, &memory_requirements);
+
+    uint32_t memory_type_index = 0;
+
+    for (uint32_t i = 0; i < memory_properties.memoryTypeCount; ++i)
+    {
+        if (memory_requirements.memoryTypeBits & (1 << i) && required_types & memory_properties.memoryTypes[i].propertyFlags)
+        {
+            memory_type_index = i;
+            break;
+        }
+    }
+
+    VkMemoryAllocateInfo allocate_info = {
+        VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+        nullptr,
+        memory_requirements.size,
+        memory_type_index
+    };
+
+    VkResult result = vkAllocateMemory (device, &allocate_info, nullptr, &memory);
+
+    if (result != VK_NULL_HANDLE)
+    {
+        throw AGE_RESULT::ERROR_SYSTEM_ALLOCATE_MEMORY;
+    }
+
+    this->device = device;
+}
+
+vk_device_memory::vk_device_memory (vk_device_memory&& other) noexcept
+{
+    *this = std::move (other);
+}
+
+vk_device_memory& vk_device_memory::operator=(vk_device_memory&& other) noexcept
+{
+    memory = other.memory;
+    device = other.device;
+
+    other.memory = VK_NULL_HANDLE;
+    other.device = VK_NULL_HANDLE;
+
+    return *this;
+}
+
+vk_device_memory::~vk_device_memory () noexcept
+{
+    if (memory != VK_NULL_HANDLE)
+    {
+        vkFreeMemory (device, memory, nullptr);
+    }
+}
+
+void vk_device_memory::bind_buffer (const VkBuffer& buffer, const VkDeviceSize& offset)
+{
+    VkResult result = vkBindBufferMemory (device, buffer, memory, offset);
+    if (result != VK_SUCCESS)
+    {
+        throw AGE_RESULT::ERROR_GRAPHICS_BIND_BUFFER_MEMORY;
+    }
+}
+
+HANDLE vk_device_memory::map (const VkDeviceSize& offset, const VkDeviceSize& size)
+{
+    HANDLE data = nullptr;
+    
+    VkResult result = vkMapMemory (device, memory, offset, size, 0, &data);
+    if (result != VK_NULL_HANDLE)
+    {
+        throw AGE_RESULT::ERROR_GRAPHICS_MAP_MEMORY;
+    }
+
+    return data;
+}
+
+void vk_device_memory::unmap ()
+{
+    vkUnmapMemory (device, memory);
+}
+
+vk_command_buffers::vk_command_buffers (const VkDevice& device, const VkCommandPool& command_pool, const uint32_t& command_buffer_count)
+{
+    VkCommandBufferAllocateInfo allocate_info = {
+        VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+        nullptr,
+        command_pool,
+        VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+        command_buffer_count
+    };
+
+    command_buffers.reserve (command_buffer_count);
+
+    VkResult result = vkAllocateCommandBuffers (device, &allocate_info, command_buffers.data ());
+    if (result != VK_NULL_HANDLE)
+    {
+        throw AGE_RESULT::ERROR_GRAPHICS_ALLOCATE_COMMAND_BUFFERS;
+    }
+
+    this->command_pool = command_pool;
+    this->device = device;
+}
+
+vk_command_buffers::vk_command_buffers (vk_command_buffers&& other) noexcept
+{
+    *this = std::move (other);
+}
+
+vk_command_buffers& vk_command_buffers::operator=(vk_command_buffers&& other) noexcept
+{
+    command_buffers = std::move (other.command_buffers);
+    command_pool = other.command_pool;
+    device = other.device;
+
+    other.command_pool = VK_NULL_HANDLE;;
+    other.device = VK_NULL_HANDLE;
+
+    return *this;
+}
+
+vk_command_buffers::~vk_command_buffers () noexcept
+{
+    if (command_buffers.size () > 0)
+    {
+        vkFreeCommandBuffers (device, command_pool, command_buffers.size (), command_buffers.data ());
+    }
+}
