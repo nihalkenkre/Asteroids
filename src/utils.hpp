@@ -42,6 +42,7 @@ public:
 class image
 {
 public:
+    image () {}
     image (const std::string& partial_file_path);
 
     uint32_t width;
@@ -50,6 +51,7 @@ public:
 
     std::vector<uint8_t> pixels;
 };
+
 
 #ifdef WIN32
  struct file_path

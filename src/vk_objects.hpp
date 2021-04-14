@@ -115,7 +115,7 @@ public:
     vk_queue () {}
     vk_queue (const VkDevice& device, const VkQueue& queue);
     
-    void submit (const std::vector<VkCommandBuffer>& commands_buffers);
+    void submit (const std::vector<VkCommandBuffer>& commands_buffers) const;
 
     VkQueue queue;
 
@@ -233,19 +233,14 @@ public:
 
     ~vk_buffer () noexcept;
 
-    void bind_memory (
-        const VkDeviceMemory& device_memory,
-        const VkDeviceSize& offset
-    );
-
     void copy_from_buffer (
         const VkBuffer& src_buffer,
         const VkDeviceSize& size,
         const VkCommandPool& command_pool,
         const VkQueue& transfer_queue
-    );
+    ) const;
 
-    void copy_to () {}
+    void copy_to () const {}
 
     VkBuffer buffer;
 
@@ -253,14 +248,22 @@ private:
     VkDevice device;        
 };
 
+class vk_image;
 
 class vk_device_memory
 {
 public:
     vk_device_memory () {}
     vk_device_memory (
+        const VkDevice& device, 
+        const std::vector<vk_buffer>& vk_buffers,
+        const VkPhysicalDeviceMemoryProperties& memory_properties,
+        const VkMemoryPropertyFlags required_types
+    );
+
+    vk_device_memory (
         const VkDevice& device,
-        const VkBuffer& buffer,
+        const std::vector<vk_image>& vk_images,
         const VkPhysicalDeviceMemoryProperties& memory_properties,
         const VkMemoryPropertyFlags required_types
     );
@@ -273,10 +276,8 @@ public:
 
     ~vk_device_memory () noexcept;
 
-    void bind_buffer (const VkBuffer& buffer, const VkDeviceSize& offset);
-
-    HANDLE map (const VkDeviceSize& offset, const VkDeviceSize& size);
-    void unmap ();
+    HANDLE map (const VkDeviceSize& offset, const VkDeviceSize& size) const;
+    void unmap () const;
 
     VkDeviceMemory memory;
 
@@ -303,8 +304,8 @@ public:
 
     ~vk_command_buffers () noexcept;
 
-    void begin (const VkCommandBufferUsageFlags& flags);
-    void end ();
+    void begin (const VkCommandBufferUsageFlags& flags) const;
+    void end () const;
 
     std::vector<VkCommandBuffer> command_buffers;
 
@@ -328,9 +329,11 @@ public:
 
     ~vk_image () noexcept;
 
-    VkImage vk_img_obj;
+    VkImage vk_img;
 
 private:
     VkDevice device;
 };
+
+
 #endif 

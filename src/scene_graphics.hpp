@@ -7,12 +7,12 @@
 class scene_graphics
 {
 public:
-    scene_graphics (common_graphics* common_graphics_obj);
+    scene_graphics (const common_graphics* common_graphics_obj);
 
 private:
 
-    void create_geometry_buffers (common_graphics* common_graphics_obj);
-    void create_image_buffers (common_graphics* common_graphics_obj);
+    void create_geometry_buffers (const common_graphics* common_graphics_obj);
+    void create_image_buffers (const common_graphics* common_graphics_obj);
 
     mesh scene_mesh;
     

@@ -4,7 +4,7 @@
 #include <cstdio>
 
 
-scene_graphics::scene_graphics (common_graphics* common_graphics_obj)
+scene_graphics::scene_graphics (const common_graphics* common_graphics_obj)
 {
     printf ("scene_graphics::scene_graphics\n");
 
@@ -12,7 +12,7 @@ scene_graphics::scene_graphics (common_graphics* common_graphics_obj)
     create_image_buffers (common_graphics_obj);
 }
 
-void scene_graphics::create_geometry_buffers (common_graphics* common_graphics_obj)
+void scene_graphics::create_geometry_buffers (const common_graphics* common_graphics_obj)
 {
     VkDeviceSize data_size = scene_mesh.positions_size + scene_mesh.uvs_size + scene_mesh.indices_size;
 
@@ -25,11 +25,10 @@ void scene_graphics::create_geometry_buffers (common_graphics* common_graphics_o
     );
 
     vk_device_memory staging_buffer_memory (
-        common_graphics_obj->graphics_device.graphics_device, staging_buffer.buffer,
+        common_graphics_obj->graphics_device.graphics_device, std::vector<vk_buffer>{ staging_buffer },
         common_graphics_obj->physical_device.memory_properties, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
     );
 
-    staging_buffer.bind_memory (staging_buffer_memory.memory, 0);
     HANDLE mapped_data_ptr = staging_buffer_memory.map (0, data_size);
 
     std::memcpy (mapped_data_ptr, scene_mesh.positions.data (), (size_t)scene_mesh.positions_size);
@@ -45,34 +44,22 @@ void scene_graphics::create_geometry_buffers (common_graphics* common_graphics_o
 
     vertex_index_device_memory = vk_device_memory (
         common_graphics_obj->graphics_device.graphics_device,
-        vertex_index_buffer.buffer,
+        std::vector<vk_buffer>{ vertex_index_buffer },
         common_graphics_obj->physical_device.memory_properties,
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
     );
 
-    vertex_index_device_memory.bind_buffer (vertex_index_buffer.buffer, 0);
-
-    vk_command_buffers copy_cmd_buffers = vk_command_buffers (
-        common_graphics_obj->graphics_device.graphics_device,
+    vertex_index_buffer.copy_from_buffer (
+        staging_buffer.buffer,
+        data_size,
         common_graphics_obj->transfer_command_pool.command_pool,
-        1
+        common_graphics_obj->device_queues.transfer_queue.queue
     );
-
-    copy_cmd_buffers.begin (VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-    VkBufferCopy buffer_copy = {
-        0, 0, data_size
-    };
-
-    vkCmdCopyBuffer (copy_cmd_buffers.command_buffers[0], staging_buffer.buffer, vertex_index_buffer.buffer, 1, &buffer_copy);
-    copy_cmd_buffers.end ();
-
-    common_graphics_obj->device_queues.graphics_queue.submit (copy_cmd_buffers.command_buffers);
-    vkQueueWaitIdle (common_graphics_obj->device_queues.graphics_queue.queue);
 
     staging_buffer_memory.unmap ();
 }
 
-void scene_graphics::create_image_buffers (common_graphics* common_graphics_obj)
+void scene_graphics::create_image_buffers (const common_graphics* common_graphics_obj)
 {
     std::vector<image> images;
     images.reserve (4);
@@ -98,12 +85,11 @@ void scene_graphics::create_image_buffers (common_graphics* common_graphics_obj)
 
     vk_device_memory staging_memory = vk_device_memory (
         common_graphics_obj->graphics_device.graphics_device,
-        staging_buffer.buffer,
+        std::vector<vk_buffer>{ staging_buffer },
         common_graphics_obj->physical_device.memory_properties,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
     );
 
-    staging_memory.bind_buffer (staging_buffer.buffer, 0);
     HANDLE mapped_data_ptr = staging_memory.map (0, total_size);
 
     uint32_t current_offset = 0;
@@ -114,13 +100,20 @@ void scene_graphics::create_image_buffers (common_graphics* common_graphics_obj)
         current_offset += i.pixels.size ();
     }
 
-    std::vector<vk_image> vk_images;
-    vk_images.reserve (images.size ());
+    std::vector<vk_image> vk_imgs;
+    vk_imgs.reserve (images.size ());
 
     for (const auto& i : images)
     {
-        vk_images.emplace_back (vk_image (common_graphics_obj->graphics_device.graphics_device, i));
+        vk_imgs.emplace_back (vk_image (common_graphics_obj->graphics_device.graphics_device, i));
     }
+
+    vk_device_memory images_memory = vk_device_memory (
+        common_graphics_obj->graphics_device.graphics_device,
+        vk_imgs,
+        common_graphics_obj->physical_device.memory_properties,
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+    );
 
     staging_memory.unmap ();
 }

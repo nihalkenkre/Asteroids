@@ -409,7 +409,7 @@ vk_queue::vk_queue (const VkDevice& device, const VkQueue& queue) : device (devi
     printf ("vk_queue::vk_queue\n");
 }
 
-void vk_queue::submit (const std::vector<VkCommandBuffer>& commands_buffers)
+void vk_queue::submit (const std::vector<VkCommandBuffer>& commands_buffers) const
 {
     VkSubmitInfo submit_info = {
         VK_STRUCTURE_TYPE_SUBMIT_INFO,
@@ -688,33 +688,56 @@ vk_buffer::~vk_buffer () noexcept
     }
 }
 
-void vk_buffer::bind_memory (const VkDeviceMemory& device_memory, const VkDeviceSize& offset)
+void vk_buffer::copy_from_buffer (const VkBuffer& src_buffer, const VkDeviceSize& size, const VkCommandPool& command_pool, const VkQueue& transfer_queue) const
 {
-    VkResult result = vkBindBufferMemory (device, buffer, device_memory, offset);
-    if (result != VK_SUCCESS)
-    {
-        throw AGE_RESULT::ERROR_GRAPHICS_BIND_BUFFER_MEMORY;
-    }
+    vk_command_buffers copy_cmd_buffers = vk_command_buffers (
+        device,
+        command_pool,
+        1
+    );
+
+    copy_cmd_buffers.begin (VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+    VkBufferCopy buffer_copy = {
+        0, 0, size
+    };
+
+    vkCmdCopyBuffer (copy_cmd_buffers.command_buffers[0], src_buffer, buffer, 1, &buffer_copy);
+    copy_cmd_buffers.end ();
+
+    vk_queue queue (device, transfer_queue);
+    queue.submit (copy_cmd_buffers.command_buffers);
+    vkQueueWaitIdle (queue.queue);
 }
 
 vk_device_memory::vk_device_memory (
     const VkDevice& device, 
-    const VkBuffer& buffer, 
+    const std::vector<vk_buffer>& vk_buffers,
     const VkPhysicalDeviceMemoryProperties& memory_properties, 
     const VkMemoryPropertyFlags required_types) : device (device)
 {
-    printf ("vk_device_memory::vk_device_memory\n");
+    printf ("vk_device_memory::vk_device_memory buffer\n");
 
+    VkDeviceSize total_data_size = 0;
     VkMemoryRequirements memory_requirements;
-    vkGetBufferMemoryRequirements (device, buffer, &memory_requirements);
 
-    uint32_t memory_type_index = 0;
+    std::vector<VkDeviceSize> buffer_data_offsets;
+    buffer_data_offsets.resize (vk_buffers.size ());
+
+    for (const auto& v_b : vk_buffers)
+    {
+        buffer_data_offsets.emplace_back (total_data_size);
+        vkGetBufferMemoryRequirements (device, v_b.buffer, &memory_requirements);
+        total_data_size += memory_requirements.size;
+    }
+
+    memory_requirements.size = total_data_size;
+    uint32_t required_memory_type_index = 0;
 
     for (uint32_t i = 0; i < memory_properties.memoryTypeCount; ++i)
     {
         if (memory_requirements.memoryTypeBits & (1 << i) && required_types & memory_properties.memoryTypes[i].propertyFlags)
         {
-            memory_type_index = i;
+            required_memory_type_index = i;
             break;
         }
     }
@@ -723,7 +746,7 @@ vk_device_memory::vk_device_memory (
         VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
         nullptr,
         memory_requirements.size,
-        memory_type_index
+        required_memory_type_index
     };
 
     VkResult result = vkAllocateMemory (device, &allocate_info, nullptr, &memory);
@@ -731,6 +754,79 @@ vk_device_memory::vk_device_memory (
     if (result != VK_SUCCESS)
     {
         throw AGE_RESULT::ERROR_SYSTEM_ALLOCATE_MEMORY;
+    }
+
+    uint32_t index_counter = 0;
+
+    for (const auto& v_b : vk_buffers)
+    {
+        result = vkBindBufferMemory (device, v_b.buffer, memory, buffer_data_offsets[index_counter]);
+        if (result != VK_SUCCESS)
+        {
+            throw AGE_RESULT::ERROR_GRAPHICS_BIND_BUFFER_MEMORY;
+        }
+
+        ++index_counter;
+    }
+}
+
+vk_device_memory::vk_device_memory (
+    const VkDevice& device, 
+    const std::vector<vk_image>& vk_images, 
+    const VkPhysicalDeviceMemoryProperties& memory_properties, 
+    const VkMemoryPropertyFlags required_types) : device (device)
+{
+    printf ("vk_device_memory::vk_device_memory images\n");
+
+    VkDeviceSize total_data_size = 0;
+    VkMemoryRequirements memory_requirements;
+
+    std::vector<VkDeviceSize> image_data_offsets;
+    image_data_offsets.resize (vk_images.size ());
+
+    for (const auto& v_i : vk_images)
+    {
+        image_data_offsets.emplace_back (total_data_size);
+        vkGetImageMemoryRequirements (device, v_i.vk_img, &memory_requirements);
+        total_data_size += memory_requirements.size;
+    }
+
+    memory_requirements.size = total_data_size;
+    uint32_t required_memory_type_index = 0;
+
+    for (uint32_t i = 0; i < memory_properties.memoryTypeCount; i++)
+    {
+        if (memory_requirements.memoryTypeBits & (1 << i) && required_types & memory_properties.memoryTypes[i].propertyFlags)
+        {
+            required_memory_type_index = i;
+            break;
+        }
+    }
+
+    VkMemoryAllocateInfo memory_allocate_info = {
+        VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+        nullptr,
+        memory_requirements.size,
+        required_memory_type_index
+    };
+
+    VkResult result = vkAllocateMemory (device, &memory_allocate_info, nullptr, &memory);
+    if (result != VK_SUCCESS)
+    {
+        throw AGE_RESULT::ERROR_GRAPHICS_ALLOCATE_MEMORY;
+    }
+
+    uint32_t index_counter = 0;
+
+    for (const auto& i : vk_images)
+    {
+        result = vkBindImageMemory(device, i.vk_img, memory, image_data_offsets[index_counter]);
+        if (result != VK_SUCCESS)
+        {
+            throw AGE_RESULT::ERROR_GRAPHICS_BIND_IMAGE_MEMORY;
+        }
+
+        ++index_counter;
     }
 }
 
@@ -764,16 +860,7 @@ vk_device_memory::~vk_device_memory () noexcept
     }
 }
 
-void vk_device_memory::bind_buffer (const VkBuffer& buffer, const VkDeviceSize& offset)
-{
-    VkResult result = vkBindBufferMemory (device, buffer, memory, offset);
-    if (result != VK_SUCCESS)
-    {
-        throw AGE_RESULT::ERROR_GRAPHICS_BIND_BUFFER_MEMORY;
-    }
-}
-
-HANDLE vk_device_memory::map (const VkDeviceSize& offset, const VkDeviceSize& size)
+HANDLE vk_device_memory::map (const VkDeviceSize& offset, const VkDeviceSize& size) const
 {
     HANDLE data = nullptr;
     
@@ -786,7 +873,7 @@ HANDLE vk_device_memory::map (const VkDeviceSize& offset, const VkDeviceSize& si
     return data;
 }
 
-void vk_device_memory::unmap ()
+void vk_device_memory::unmap () const
 {
     vkUnmapMemory (device, memory);
 }
@@ -846,7 +933,7 @@ vk_command_buffers::~vk_command_buffers () noexcept
     }
 }
 
-void vk_command_buffers::begin (const VkCommandBufferUsageFlags& flags)
+void vk_command_buffers::begin (const VkCommandBufferUsageFlags& flags) const
 {
     VkCommandBufferBeginInfo begin_info = {
         VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -867,7 +954,7 @@ void vk_command_buffers::begin (const VkCommandBufferUsageFlags& flags)
     }
 }
 
-void vk_command_buffers::end ()
+void vk_command_buffers::end () const
 {
     VkResult result = VK_SUCCESS;
 
@@ -881,9 +968,10 @@ void vk_command_buffers::end ()
     }
 }
 
+
 vk_image::vk_image (const VkDevice& device, const image& img) : device (device)
 {
-    printf ("vk_image::vk_iamge\n");
+    printf ("vk_image::vk_image\n");
 
     VkImageCreateInfo create_info = {
         VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
@@ -891,7 +979,7 @@ vk_image::vk_image (const VkDevice& device, const image& img) : device (device)
         0,
         VK_IMAGE_TYPE_2D,
         VK_FORMAT_R8G8B8A8_UNORM,
-        {img.width, img.height, 1},
+        { img.width, img.height, 1},
         1,
         1,
         VK_SAMPLE_COUNT_1_BIT,
@@ -903,7 +991,7 @@ vk_image::vk_image (const VkDevice& device, const image& img) : device (device)
         VK_IMAGE_LAYOUT_UNDEFINED
     };
 
-    VkResult result = vkCreateImage (device, &create_info, nullptr, &vk_img_obj);
+    VkResult result = vkCreateImage (device, &create_info, nullptr, &vk_img);
     if (result != VK_SUCCESS)
     {
         throw AGE_RESULT::ERROR_GRAPHICS_CREATE_IMAGE;
@@ -921,10 +1009,10 @@ vk_image& vk_image::operator=(vk_image&& other) noexcept
 {
     printf ("vk_image move assignment\n");
 
-    vk_img_obj = other.vk_img_obj;
+    vk_img = other.vk_img;
     device = other.device;
 
-    other.vk_img_obj = VK_NULL_HANDLE;
+    other.vk_img = VK_NULL_HANDLE;
     other.device = VK_NULL_HANDLE;
 
     return *this;
@@ -932,10 +1020,10 @@ vk_image& vk_image::operator=(vk_image&& other) noexcept
 
 vk_image::~vk_image () noexcept
 {
-    printf ("vk_image::~vk_image\n");
-
-    if (vk_img_obj != VK_NULL_HANDLE && device != VK_NULL_HANDLE)
+    if (vk_img != VK_NULL_HANDLE && device != VK_NULL_HANDLE)
     {
-        vkDestroyImage (device, vk_img_obj, nullptr);
+        vkDestroyImage (device, vk_img, nullptr);
     }
 }
+
+
