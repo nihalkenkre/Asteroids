@@ -8,11 +8,21 @@ class scene_graphics
 {
 public:
     scene_graphics (const common_graphics* common_graphics_obj);
+    
+    scene_graphics (const scene_graphics& other) = delete;
+    scene_graphics& operator= (const scene_graphics& other) = delete;
+
+    scene_graphics (scene_graphics&& other) = delete;
+    scene_graphics& operator= (scene_graphics&& other) = delete;
+
+    ~scene_graphics ();
 
 private:
 
-    void create_geometry_buffers (const common_graphics* common_graphics_obj);
-    void create_image_buffers (const common_graphics* common_graphics_obj);
+    void create_geometry_buffers ();
+    void create_image_buffers ();
+
+    const common_graphics* common_graphics_obj;
 
     mesh scene_mesh;
     
