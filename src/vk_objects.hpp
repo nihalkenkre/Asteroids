@@ -60,7 +60,7 @@ public:
 class vk_surface
 {
 public:
-    vk_surface () {}
+    vk_surface () : surface (VK_NULL_HANDLE), instance (VK_NULL_HANDLE) {}
     vk_surface (const VkInstance& instance, 
                 const VkPhysicalDevice& physical_device,
                 const HINSTANCE& h_instance,
@@ -100,7 +100,7 @@ class vk_buffer;
 class vk_graphics_device
 {
 public:
-    vk_graphics_device () {}
+    vk_graphics_device () : graphics_device (VK_NULL_HANDLE) {}
     vk_graphics_device (const VkPhysicalDevice& physical_device, 
                         const std::vector<VkDeviceQueueCreateInfo>& queue_create_infos);
 
@@ -119,7 +119,7 @@ public:
 class vk_queue
 {
 public:
-    vk_queue () {}
+    vk_queue () : queue (VK_NULL_HANDLE), device (VK_NULL_HANDLE) {}
     vk_queue (const VkDevice& device, const VkQueue& queue);
     
     void submit (const std::vector<VkCommandBuffer>& commands_buffers) const;
@@ -156,7 +156,7 @@ public:
 class vk_swapchain
 {
 public:
-    vk_swapchain () {}
+    vk_swapchain () : swapchain (VK_NULL_HANDLE), device (VK_NULL_HANDLE) {}
     vk_swapchain (const VkDevice& device, const vk_surface& surface);
     
     vk_swapchain (const vk_swapchain& other) = delete;
@@ -179,7 +179,7 @@ private:
 class vk_command_pool
 {
 public:
-    vk_command_pool () {}
+    vk_command_pool () : command_pool (VK_NULL_HANDLE), device (VK_NULL_HANDLE) {}
     vk_command_pool (const VkDevice& device, 
                         const uint32_t& queue_family_index,
                         const VkCommandPoolCreateFlags& flags
@@ -203,7 +203,7 @@ private:
 class vk_sampler
 {
 public:
-    vk_sampler () {}
+    vk_sampler () : sampler (VK_NULL_HANDLE), device (VK_NULL_HANDLE) {}
     vk_sampler (const VkDevice& device);
 
     vk_sampler (const vk_sampler& other) = delete;
@@ -224,7 +224,7 @@ private:
 class vk_buffer
 {
 public:
-    vk_buffer () {}
+    vk_buffer () : buffer (VK_NULL_HANDLE), device (VK_NULL_HANDLE) {}
     vk_buffer (
         const VkDevice& device,
         const VkDeviceSize& size,
@@ -264,7 +264,7 @@ private:
 class vk_device_memory
 {
 public:
-    vk_device_memory () {}
+    vk_device_memory () : memory (VK_NULL_HANDLE), device (VK_NULL_HANDLE) {}
 
     vk_device_memory (
         const VkDevice& device,
@@ -301,11 +301,38 @@ private:
         const VkMemoryPropertyFlags required_types);
 };
 
+class vk_command_buffer
+{
+public:
+    vk_command_buffer () : command_buffer (VK_NULL_HANDLE), command_pool (VK_NULL_HANDLE), device (VK_NULL_HANDLE) {}
+    vk_command_buffer (
+        const VkDevice& device,
+        const VkCommandPool& command_pool
+    );
+
+    vk_command_buffer (const vk_command_buffer& other) = delete;
+    vk_command_buffer& operator= (const vk_command_buffer& other) = delete;
+
+    vk_command_buffer (vk_command_buffer&& other) noexcept;
+    vk_command_buffer& operator= (vk_command_buffer&& other) noexcept;
+
+    ~vk_command_buffer () noexcept;
+
+    VkCommandBuffer command_buffer;
+
+    void begin (const VkCommandBufferUsageFlags& flags) const;
+    void end () const;
+
+private:
+    VkCommandPool command_pool;
+    VkDevice device;
+};
+
 
 class vk_command_buffers
 {
 public:
-    vk_command_buffers () {}
+    vk_command_buffers () : command_pool (VK_NULL_HANDLE), device (VK_NULL_HANDLE) {}
     vk_command_buffers (
         const VkDevice& device,
         const VkCommandPool& command_pool,
@@ -327,14 +354,14 @@ public:
 
 private:
     VkCommandPool command_pool;
-    VkDevice device;    
+    VkDevice device;
 };
 
 
 class vk_image
 {
 public:
-    vk_image () {}
+    vk_image () : vk_img (VK_NULL_HANDLE), device (VK_NULL_HANDLE) {}
     vk_image (const VkDevice& device, const image_data& img);
 
     vk_image (const vk_image& other) = delete;
@@ -346,6 +373,19 @@ public:
     ~vk_image () noexcept;
 
     VkImage vk_img;
+
+    void change_layout (
+        const VkAccessFlags& src_access,
+        const VkAccessFlags& dst_access,
+        const VkImageLayout& src_layout,
+        const VkImageLayout& dst_layout,
+        const uint32_t& src_queue_family_index,
+        const uint32_t& dst_queue_family_index,
+        const VkPipelineStageFlags& src_pipeline_stage,
+        const VkPipelineStageFlags& dst_pipeline_stage, 
+        const VkCommandPool& command_pool,
+        const VkQueue& queue
+    ) const;
 
 private:
     VkDevice device;

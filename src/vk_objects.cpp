@@ -927,6 +927,87 @@ void vk_device_memory::allocate_bind_images (
     }
 }
 
+vk_command_buffer::vk_command_buffer (
+    const VkDevice& device,
+    const VkCommandPool& command_pool) : command_pool (command_pool), device (device)
+{
+    printf ("vk_command_buffer::vk_command_buffer\n");
+
+    VkCommandBufferAllocateInfo allocate_info = {
+        VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+        nullptr,
+        command_pool,
+        VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+        1
+    };
+
+    VkResult result = vkAllocateCommandBuffers (device, &allocate_info, &command_buffer);
+    if (result != VK_SUCCESS)
+    {
+        throw AGE_RESULT::ERROR_GRAPHICS_ALLOCATE_COMMAND_BUFFERS;
+    }
+}
+
+vk_command_buffer::vk_command_buffer (vk_command_buffer&& other) noexcept
+{
+    printf ("vk_command_buffer move ctor\n");
+
+    *this = std::move (other);
+}
+
+vk_command_buffer& vk_command_buffer::operator= (vk_command_buffer&& other) noexcept
+{
+    printf ("vk_command_buffer move assignment\n");
+
+    command_buffer = other.command_buffer;
+    command_pool = other.command_pool;
+    device = other.device;
+
+    other.command_buffer = VK_NULL_HANDLE;
+    other.command_pool = VK_NULL_HANDLE;
+    other.device = VK_NULL_HANDLE;
+
+    return *this;
+}
+
+vk_command_buffer::~vk_command_buffer () noexcept
+{
+    printf ("vk_command_buffer::~vk_command_buffer\n");
+
+    if (command_buffer != VK_NULL_HANDLE &&
+        command_pool != VK_NULL_HANDLE &&
+        device != VK_NULL_HANDLE)
+    {
+        vkFreeCommandBuffers (device, command_pool, 1, &command_buffer);
+    }
+}
+
+void vk_command_buffer::begin (const VkCommandBufferUsageFlags& flags) const
+{
+    VkCommandBufferBeginInfo begin_info = {
+        VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+        nullptr,
+        flags,
+        nullptr
+    };
+
+    VkResult result = vkBeginCommandBuffer (command_buffer, &begin_info);
+    if (result != VK_SUCCESS)
+    {
+        throw AGE_RESULT::ERROR_GRAPHICS_BEGIN_COMMAND_BUFFER;
+    }
+}
+
+void vk_command_buffer::end () const
+{
+    VkResult result = vkEndCommandBuffer (command_buffer);
+    if (result != VK_SUCCESS)
+    {
+        throw AGE_RESULT::ERROR_GRAPHICS_END_COMMAND_BUFFER;
+    }
+}
+
+
 vk_command_buffers::vk_command_buffers (
     const VkDevice& device, 
     const VkCommandPool& command_pool, 
@@ -976,7 +1057,9 @@ vk_command_buffers::~vk_command_buffers () noexcept
 {
     printf ("vk_command_buffers::~vk_command_buffers\n");
 
-    if (command_buffers.size () > 0 && device != VK_NULL_HANDLE)
+    if (command_buffers.size () > 0 && 
+        command_pool != VK_NULL_HANDLE && 
+        device != VK_NULL_HANDLE)
     {
         vkFreeCommandBuffers (device, command_pool, command_buffers.size (), command_buffers.data ());
     }
@@ -1073,4 +1156,61 @@ vk_image::~vk_image () noexcept
     {
         vkDestroyImage (device, vk_img, nullptr);
     }
+}
+
+void vk_image::change_layout (
+    const VkAccessFlags& src_access,
+    const VkAccessFlags& dst_access,
+    const VkImageLayout& src_layout,
+    const VkImageLayout& dst_layout,
+    const uint32_t& src_queue_family_index,
+    const uint32_t& dst_queue_family_index,
+    const VkPipelineStageFlags& src_pipeline_stage, 
+    const VkPipelineStageFlags& dst_pipeline_stage,
+    const VkCommandPool& command_pool,
+    const VkQueue& queue) const
+{
+    VkImageSubresourceRange subresource_range = {
+		VK_IMAGE_ASPECT_COLOR_BIT,
+		0,
+		1,
+		0,
+		1
+	};
+
+	VkImageMemoryBarrier image_memory_barrier = {
+		VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+		nullptr,
+		src_access,
+		dst_access,
+		src_layout,
+		dst_layout,
+		src_queue_family_index,
+		dst_queue_family_index,
+		vk_img,
+		subresource_range
+	};
+
+    vk_command_buffer cmd_buffer (device, command_pool);
+    cmd_buffer.begin (VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+
+    vkCmdPipelineBarrier (
+        cmd_buffer.command_buffer,
+        src_pipeline_stage,
+        dst_pipeline_stage,
+        0,
+        0,
+        nullptr,
+        0,
+        nullptr,
+        1,
+        &image_memory_barrier
+    );
+
+    cmd_buffer.end ();
+
+    vk_queue one_time_submit_queue (device, queue);
+    one_time_submit_queue.submit (std::vector<VkCommandBuffer>{ cmd_buffer.command_buffer });
+    
+    vkQueueWaitIdle (queue);
 }
