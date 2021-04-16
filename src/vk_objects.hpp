@@ -146,13 +146,6 @@ public:
 };
 
 
-class vk_image_view
-{
-public:
-    vk_image_view () {}
-};
-
-
 class vk_swapchain
 {
 public:
@@ -252,7 +245,13 @@ public:
         const VkQueue& transfer_queue
     ) const;
 
-    void copy_to () const {}
+    void copy_to_images (
+        const std::vector<VkImage>& images,
+        const std::vector<VkExtent3D>& extents,
+        const std::vector<VkDeviceSize>& offsets,
+        const VkCommandPool& command_pool, 
+        const VkQueue& transfer_queue
+    ) const;
 
     VkBuffer buffer;
 
@@ -391,6 +390,12 @@ private:
     VkDevice device;
 };
 
+
+class vk_image_view
+{
+public:
+    vk_image_view () {}
+};
 
 #endif 
 

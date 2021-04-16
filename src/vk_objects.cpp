@@ -711,7 +711,11 @@ vk_buffer::~vk_buffer () noexcept
     }
 }
 
-void vk_buffer::copy_to_buffer (const VkBuffer& dst_buffer, const VkDeviceSize& size, const VkCommandPool& command_pool, const VkQueue& transfer_queue) const
+void vk_buffer::copy_to_buffer (
+    const VkBuffer& dst_buffer,
+    const VkDeviceSize& size, 
+    const VkCommandPool& command_pool, 
+    const VkQueue& transfer_queue) const
 {
     vk_command_buffers copy_cmd_buffers = vk_command_buffers (
         device,
@@ -730,6 +734,59 @@ void vk_buffer::copy_to_buffer (const VkBuffer& dst_buffer, const VkDeviceSize& 
     vk_queue queue (device, transfer_queue);
     queue.submit (copy_cmd_buffers.command_buffers);
     vkQueueWaitIdle (queue.queue);
+}
+
+void vk_buffer::copy_to_images (
+    const std::vector<VkImage>& images,
+    const std::vector<VkExtent3D>& extents,
+    const std::vector<VkDeviceSize>& offsets,
+    const VkCommandPool& command_pool, 
+    const VkQueue& transfer_queue) const
+{
+    VkOffset3D img_offset = { 0,0,0 };
+
+	VkImageSubresourceLayers subresource_layers = {
+		VK_IMAGE_ASPECT_COLOR_BIT,
+		0,
+		0,
+		1
+	};
+
+	VkBufferImageCopy buffer_image_copy = {
+		0,
+		0,
+		0,
+		subresource_layers,
+		img_offset,
+		{0,0,0}
+	};
+
+    vk_command_buffer copy_cmd_buffer (device, command_pool);
+    copy_cmd_buffer.begin (VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+
+    uint32_t current_index = 0;
+
+    for (const auto& i : images)
+    {
+        buffer_image_copy.bufferOffset = offsets[current_index];
+        buffer_image_copy.imageExtent = extents[current_index];
+
+        vkCmdCopyBufferToImage (
+            copy_cmd_buffer.command_buffer,
+            buffer,
+            i,
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            1,
+            &buffer_image_copy
+        );
+
+        ++current_index;
+    }
+
+    copy_cmd_buffer.end ();
+
+    vk_queue one_time_submit (device, transfer_queue);
+    one_time_submit.submit ({copy_cmd_buffer.command_buffer});
 }
 
 
