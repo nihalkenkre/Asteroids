@@ -41,7 +41,7 @@ full_file_path::full_file_path (const std::string& partial_file_path)
 }
 
 
-mesh::mesh ()
+mesh_data::mesh_data ()
 {
 	printf ("mesh::mesh\n");
 
@@ -57,7 +57,7 @@ mesh::mesh ()
 }
 
 
-image::image (const std::string& partial_file_path)
+image_data::image_data (const std::string& partial_file_path)
 {
 	printf ("image::image\n");
 

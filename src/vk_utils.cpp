@@ -205,7 +205,7 @@ AGE_RESULT vk_change_images_layout (
 	const VkAccessFlags dst_access,
 	const VkImageLayout src_layout,
 	const VkImageLayout dst_layout,
-	const uint32_t src_queue_famliy_index,
+	const uint32_t src_queue_family_index,
 	const uint32_t dst_queue_family_index,
 	const VkPipelineStageFlags src_pipeline_stage,
 	const VkPipelineStageFlags dst_pipeline_stage
@@ -226,7 +226,7 @@ AGE_RESULT vk_change_images_layout (
 		dst_access,
 		src_layout,
 		dst_layout,
-		src_queue_famliy_index,
+		src_queue_family_index,
 		dst_queue_family_index,
 		VK_NULL_HANDLE,
 		subresource_range

@@ -10,6 +10,12 @@
 
 #include "utils.hpp"
 
+enum class vk_type
+{
+    buffer,
+    image,
+};
+
 class vk_instance
 {
 public:
@@ -105,16 +111,6 @@ public:
     vk_graphics_device& operator= (vk_graphics_device&& other) noexcept;
 
     ~vk_graphics_device () noexcept;
-
-    VkBuffer create_buffer (
-        const VkDeviceSize& size,
-        const VkBufferUsageFlags usage_flags,
-        const uint32_t& queue_family_index) const;
-
-    void destroy_buffer (const vk_buffer& buffer) const;
-
-    VkImage create_image (const VkExtent3D& extent) const;
-    void destroy_image (const VkImage& image) const;
 
     VkDevice graphics_device;
 };
@@ -229,40 +225,28 @@ class vk_buffer
 {
 public:
     vk_buffer () {}
-    vk_buffer (const VkBuffer& buffer) : buffer (buffer) {}
-
-    VkBuffer buffer;
-
-    void copy_to_buffer (
-        const VkDevice& device,
-        const VkBuffer& dst_buffer,
-        const VkDeviceSize& size,
-        const VkCommandPool& command_pool,
-        const VkQueue& transfer_queue) const;
-};
-
-
-class vk_buffer_unique
-{
-public:
-    vk_buffer_unique () {}
-    vk_buffer_unique (
+    vk_buffer (
         const VkDevice& device,
         const VkDeviceSize& size,
         const VkBufferUsageFlags usage_flags,
         const VkSharingMode& sharing_mode,
         const uint32_t& queue_family_index);
 
-    vk_buffer_unique (const vk_buffer_unique& other) = delete;
-    vk_buffer_unique& operator= (const vk_buffer_unique& other) = delete;
+    vk_buffer (
+        const VkDevice& device,
+        const buffer_data& buff
+    );
 
-    vk_buffer_unique (vk_buffer_unique&& other) noexcept;
-    vk_buffer_unique& operator= (vk_buffer_unique&& other) noexcept;
+    vk_buffer (const vk_buffer& other) = delete;
+    vk_buffer& operator= (const vk_buffer& other) = delete;
 
-    ~vk_buffer_unique () noexcept;
+    vk_buffer (vk_buffer&& other) noexcept;
+    vk_buffer& operator= (vk_buffer&& other) noexcept;
 
-    void copy_from_buffer (
-        const VkBuffer& src_buffer,
+    ~vk_buffer () noexcept;
+
+    void copy_to_buffer (
+        const VkBuffer& dst_buffer,
         const VkDeviceSize& size,
         const VkCommandPool& command_pool,
         const VkQueue& transfer_queue
@@ -276,41 +260,19 @@ private:
     VkDevice device;
 };
 
-class vk_image_unique;
-class vk_image;
 
 class vk_device_memory
 {
 public:
     vk_device_memory () {}
-    vk_device_memory (
-        const VkDevice& device, 
-        const std::vector<vk_buffer_unique>& vk_buffers,
-        const VkPhysicalDeviceMemoryProperties& memory_properties,
-        const VkMemoryPropertyFlags required_types
-    );
 
     vk_device_memory (
         const VkDevice& device,
-        const std::vector<vk_image_unique>& vk_images,
+        const std::vector<uint64_t>& vk_type_objects,
         const VkPhysicalDeviceMemoryProperties& memory_properties,
-        const VkMemoryPropertyFlags required_types
+        const VkMemoryPropertyFlags required_types,
+        const vk_type& type
     );
-
-    vk_device_memory (
-        const VkDevice& device,
-        const std::vector<vk_buffer>& vk_buffers,
-        const VkPhysicalDeviceMemoryProperties& memory_properties,
-        const VkMemoryPropertyFlags required_types
-    );
-
-    vk_device_memory (
-        const VkDevice& device,
-        const std::vector<vk_image>& vk_images,
-        const VkPhysicalDeviceMemoryProperties& memory_properties,
-        const VkMemoryPropertyFlags required_types
-    );
-
 
     vk_device_memory (const vk_device_memory& other) = delete;
     vk_device_memory& operator= (const vk_device_memory& other) = delete;
@@ -327,6 +289,16 @@ public:
 
 private:
     VkDevice device;
+
+    void allocate_bind_buffers (const VkDevice& device,
+        const std::vector<VkBuffer>& buffers,
+        const VkPhysicalDeviceMemoryProperties& memory_properties,
+        const VkMemoryPropertyFlags required_types);
+
+    void allocate_bind_images (const VkDevice& device,
+        const std::vector<VkImage>& images,
+        const VkPhysicalDeviceMemoryProperties& memory_properties,
+        const VkMemoryPropertyFlags required_types);
 };
 
 
@@ -363,24 +335,15 @@ class vk_image
 {
 public:
     vk_image () {}
-    vk_image (const VkImage& image) : image (image) {}
+    vk_image (const VkDevice& device, const image_data& img);
 
-    VkImage image;
-};
+    vk_image (const vk_image& other) = delete;
+    vk_image& operator= (const vk_image& other) = delete;
 
-class vk_image_unique
-{
-public:
-    vk_image_unique () {}
-    vk_image_unique (const VkDevice& device, const image& img);
+    vk_image (vk_image&& other) noexcept;
+    vk_image& operator= (vk_image&& other) noexcept;
 
-    vk_image_unique (const vk_image_unique& other) = delete;
-    vk_image_unique& operator= (const vk_image_unique& other) = delete;
-
-    vk_image_unique (vk_image_unique&& other) noexcept;
-    vk_image_unique& operator= (vk_image_unique&& other) noexcept;
-
-    ~vk_image_unique () noexcept;
+    ~vk_image () noexcept;
 
     VkImage vk_img;
 
@@ -390,3 +353,4 @@ private:
 
 
 #endif 
+

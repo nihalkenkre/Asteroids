@@ -12,6 +12,8 @@
 #include <vector>
 #include <string>
 
+#include <vulkan/vulkan.h>
+
 #define CHECK_AGAINST_RESULT(func, result) result = func; if (result != 0) return result;
 
 class full_file_path
@@ -23,10 +25,10 @@ public:
 };
 
 
-class mesh
+class mesh_data
 {
 public:
-    mesh ();
+    mesh_data ();
 
     std::vector<float> positions;
     std::vector<float> uvs;
@@ -39,11 +41,29 @@ public:
 };
 
 
-class image
+class buffer_data
 {
 public:
-    image () {}
-    image (const std::string& partial_file_path);
+    buffer_data () {}
+    buffer_data (
+        const VkDeviceSize& size,
+        const VkSharingMode& sharing_mode,
+        const VkBufferUsageFlags& usage_flags,
+        const uint32_t& queue_family_index
+    ) : size (size), sharing_mode (sharing_mode), usage_flags (usage_flags), queue_family_index (queue_family_index) {}
+
+    VkDeviceSize size;
+    VkSharingMode sharing_mode;
+    VkBufferUsageFlags usage_flags;
+    uint32_t queue_family_index;
+};
+
+
+class image_data
+{
+public:
+    image_data () {}
+    image_data (const std::string& partial_file_path);
 
     uint32_t width;
     uint32_t height;

@@ -24,10 +24,12 @@ private:
 
     const common_graphics* common_graphics_obj;
 
-    mesh scene_mesh;
+    mesh_data scene_mesh;
     
-    vk_buffer vertex_index_buffer;
-    vk_device_memory vertex_index_device_memory;
+    //vk_buffer vertex_index_buffer;
+    //vk_device_memory vertex_index_device_memory;
+
+    //vk_device_memory images_device_memory;
 };
 
 #endif
