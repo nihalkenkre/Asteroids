@@ -147,6 +147,7 @@ public:
     vk_queue transfer_queue;
 };
 
+class vk_image_view;
 
 class vk_swapchain
 {

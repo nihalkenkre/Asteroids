@@ -22,7 +22,7 @@ void scene_graphics::create_geometry_buffers ()
 {
     VkDeviceSize data_size = scene_mesh.positions_size + scene_mesh.uvs_size + scene_mesh.indices_size;
 
-    buffer_data b (data_size, VK_SHARING_MODE_EXCLUSIVE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, common_graphics_obj->queue_family_indices.graphics_queue_family_index);
+    buffer_data b (data_size, VK_SHARING_MODE_EXCLUSIVE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, common_graphics_obj->graphics_queue_family_index);
 
     vk_buffer staging_buffer (common_graphics_obj->graphics_device.graphics_device, b);
 
@@ -40,7 +40,12 @@ void scene_graphics::create_geometry_buffers ()
 
     staging_buffer_memory.unmap ();
 
-    vertex_index_buffer = vk_buffer (common_graphics_obj->graphics_device.graphics_device, buffer_data( data_size, VK_SHARING_MODE_EXCLUSIVE,VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT , common_graphics_obj->queue_family_indices.graphics_queue_family_index ));
+    vertex_index_buffer = vk_buffer (
+        common_graphics_obj->graphics_device.graphics_device, 
+        buffer_data (
+            data_size, 
+            VK_SHARING_MODE_EXCLUSIVE,VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, 
+            common_graphics_obj->graphics_queue_family_index));
 
     vertex_index_device_memory = vk_device_memory (
         common_graphics_obj->graphics_device.graphics_device,
@@ -54,7 +59,7 @@ void scene_graphics::create_geometry_buffers ()
         vertex_index_buffer.buffer,
         data_size,
         common_graphics_obj->transfer_command_pool.command_pool,
-        common_graphics_obj->device_queues.transfer_queue.queue
+        common_graphics_obj->transfer_queue
     );
 }
 
@@ -77,7 +82,7 @@ void scene_graphics::create_image_buffers ()
         total_size,
         VK_SHARING_MODE_EXCLUSIVE,
         VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-        common_graphics_obj->queue_family_indices.graphics_queue_family_index
+        common_graphics_obj->graphics_queue_family_index
     );
 
     vk_buffer staging_buffer (common_graphics_obj->graphics_device.graphics_device, b);
@@ -130,12 +135,12 @@ void scene_graphics::create_image_buffers ()
         VK_ACCESS_TRANSFER_WRITE_BIT,
         VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-        common_graphics_obj->queue_family_indices.transfer_queue_family_index,
-        common_graphics_obj->queue_family_indices.transfer_queue_family_index,
+        common_graphics_obj->transfer_queue_family_index,
+        common_graphics_obj->transfer_queue_family_index,
         VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
         VK_PIPELINE_STAGE_TRANSFER_BIT,
         common_graphics_obj->transfer_command_pool.command_pool,
-        common_graphics_obj->device_queues.transfer_queue.queue
+        common_graphics_obj->transfer_queue
     );
 
     player_image.change_layout (
@@ -143,12 +148,12 @@ void scene_graphics::create_image_buffers ()
         VK_ACCESS_TRANSFER_WRITE_BIT,
         VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-        common_graphics_obj->queue_family_indices.transfer_queue_family_index,
-        common_graphics_obj->queue_family_indices.transfer_queue_family_index,
+        common_graphics_obj->transfer_queue_family_index,
+        common_graphics_obj->transfer_queue_family_index,
         VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
         VK_PIPELINE_STAGE_TRANSFER_BIT,
         common_graphics_obj->transfer_command_pool.command_pool,
-        common_graphics_obj->device_queues.transfer_queue.queue
+        common_graphics_obj->transfer_queue
     );
 
     asteroid_image.change_layout (
@@ -156,12 +161,12 @@ void scene_graphics::create_image_buffers ()
         VK_ACCESS_TRANSFER_WRITE_BIT,
         VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-        common_graphics_obj->queue_family_indices.transfer_queue_family_index,
-        common_graphics_obj->queue_family_indices.transfer_queue_family_index,
+        common_graphics_obj->transfer_queue_family_index,
+        common_graphics_obj->transfer_queue_family_index,
         VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
         VK_PIPELINE_STAGE_TRANSFER_BIT,
         common_graphics_obj->transfer_command_pool.command_pool,
-        common_graphics_obj->device_queues.transfer_queue.queue
+        common_graphics_obj->transfer_queue
     );
 
     bullet_image.change_layout (
@@ -169,12 +174,12 @@ void scene_graphics::create_image_buffers ()
         VK_ACCESS_TRANSFER_WRITE_BIT,
         VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-        common_graphics_obj->queue_family_indices.transfer_queue_family_index,
-        common_graphics_obj->queue_family_indices.transfer_queue_family_index,
+        common_graphics_obj->transfer_queue_family_index,
+        common_graphics_obj->transfer_queue_family_index,
         VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
         VK_PIPELINE_STAGE_TRANSFER_BIT,
         common_graphics_obj->transfer_command_pool.command_pool,
-        common_graphics_obj->device_queues.transfer_queue.queue
+        common_graphics_obj->transfer_queue
     );
 
     staging_buffer.copy_to_images (
@@ -182,7 +187,7 @@ void scene_graphics::create_image_buffers ()
         image_extents,
         image_offsets,
         common_graphics_obj->transfer_command_pool.command_pool,
-        common_graphics_obj->device_queues.transfer_queue.queue
+        common_graphics_obj->transfer_queue
     );
 
         background_image.change_layout (
@@ -190,12 +195,12 @@ void scene_graphics::create_image_buffers ()
         VK_ACCESS_SHADER_READ_BIT,
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-        common_graphics_obj->queue_family_indices.transfer_queue_family_index,
-        common_graphics_obj->queue_family_indices.transfer_queue_family_index,
+        common_graphics_obj->transfer_queue_family_index,
+        common_graphics_obj->transfer_queue_family_index,
         VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
         VK_PIPELINE_STAGE_TRANSFER_BIT,
         common_graphics_obj->transfer_command_pool.command_pool,
-        common_graphics_obj->device_queues.transfer_queue.queue
+        common_graphics_obj->transfer_queue
     );
 
     player_image.change_layout (
@@ -203,12 +208,12 @@ void scene_graphics::create_image_buffers ()
         VK_ACCESS_SHADER_READ_BIT,
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-        common_graphics_obj->queue_family_indices.transfer_queue_family_index,
-        common_graphics_obj->queue_family_indices.transfer_queue_family_index,
+        common_graphics_obj->transfer_queue_family_index,
+        common_graphics_obj->transfer_queue_family_index,
         VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
         VK_PIPELINE_STAGE_TRANSFER_BIT,
         common_graphics_obj->transfer_command_pool.command_pool,
-        common_graphics_obj->device_queues.transfer_queue.queue
+        common_graphics_obj->transfer_queue
     );
 
     asteroid_image.change_layout (
@@ -216,12 +221,12 @@ void scene_graphics::create_image_buffers ()
         VK_ACCESS_SHADER_READ_BIT,
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-        common_graphics_obj->queue_family_indices.transfer_queue_family_index,
-        common_graphics_obj->queue_family_indices.transfer_queue_family_index,
+        common_graphics_obj->transfer_queue_family_index,
+        common_graphics_obj->transfer_queue_family_index,
         VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
         VK_PIPELINE_STAGE_TRANSFER_BIT,
         common_graphics_obj->transfer_command_pool.command_pool,
-        common_graphics_obj->device_queues.transfer_queue.queue
+        common_graphics_obj->transfer_queue
     );
 
     bullet_image.change_layout (
@@ -229,12 +234,12 @@ void scene_graphics::create_image_buffers ()
         VK_ACCESS_SHADER_READ_BIT,
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-        common_graphics_obj->queue_family_indices.transfer_queue_family_index,
-        common_graphics_obj->queue_family_indices.transfer_queue_family_index,
+        common_graphics_obj->transfer_queue_family_index,
+        common_graphics_obj->transfer_queue_family_index,
         VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
         VK_PIPELINE_STAGE_TRANSFER_BIT,
         common_graphics_obj->transfer_command_pool.command_pool,
-        common_graphics_obj->device_queues.transfer_queue.queue
+        common_graphics_obj->transfer_queue
     );
 
     
