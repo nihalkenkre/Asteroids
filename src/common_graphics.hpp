@@ -24,6 +24,13 @@ public:
 
 	std::vector<VkImage> swapchain_images;
 	std::vector<vk_image_view> swapchain_image_views;
+
+	uint32_t graphics_queue_family_index;
+	uint32_t compute_queue_family_index;
+	uint32_t transfer_queue_family_index;
+
+private:
+	void get_queue_infos () const;
 };
 
 #endif

@@ -39,6 +39,8 @@ public:
     vk_physical_device () {}
     vk_physical_device (const VkInstance& instance);
 
+    std::tuple<uint32_t, uint32_t, uint32_t> get_queue_family_indices () const;
+
     VkPhysicalDevice physical_device;
     VkPhysicalDeviceMemoryProperties memory_properties;
     VkPhysicalDeviceLimits limits;

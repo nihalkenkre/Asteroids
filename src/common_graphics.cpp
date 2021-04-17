@@ -9,7 +9,10 @@ common_graphics::common_graphics (const HINSTANCE& h_instance, const HWND& h_wnd
 
     instance = vk_instance ();
     physical_device = vk_physical_device (instance.instance);
-    queue_family_indices = vk_queue_family_indices (physical_device.physical_device);
+    std::tie (
+        graphics_queue_family_index, 
+        compute_queue_family_index, 
+        transfer_queue_family_index) = physical_device.get_queue_family_indices ();
     surface = vk_surface (
         instance.instance,
         physical_device.physical_device,
@@ -35,4 +38,9 @@ common_graphics::common_graphics (const HINSTANCE& h_instance, const HWND& h_wnd
         VK_COMMAND_POOL_CREATE_TRANSIENT_BIT
     );
     common_sampler = vk_sampler (graphics_device.graphics_device);
+}
+
+void common_graphics::get_queue_infos () const
+{
+    
 }
