@@ -836,7 +836,7 @@ void vk_buffer::copy_to_images (
 		{0,0,0}
 	};
 
-    vk_command_buffer copy_cmd_buffer (device, command_pool);
+    vk_command_buffers copy_cmd_buffer (device, command_pool, 1);
     copy_cmd_buffer.begin (VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
     uint32_t current_index = 0;
@@ -847,7 +847,7 @@ void vk_buffer::copy_to_images (
         buffer_image_copy.imageExtent = extents[current_index];
 
         vkCmdCopyBufferToImage (
-            copy_cmd_buffer.command_buffer,
+            copy_cmd_buffer.command_buffers[0],
             buffer,
             i,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -861,7 +861,7 @@ void vk_buffer::copy_to_images (
     copy_cmd_buffer.end ();
 
     vk_queue one_time_submit (device, transfer_queue);
-    one_time_submit.submit ({copy_cmd_buffer.command_buffer});
+    one_time_submit.submit ({copy_cmd_buffer.command_buffers[0]});
 }
 
 
@@ -1059,6 +1059,7 @@ void vk_device_memory::allocate_bind_images (
     }
 }
 
+/*
 vk_command_buffer::vk_command_buffer (
     const VkDevice& device,
     const VkCommandPool& command_pool) : command_pool (command_pool), device (device)
@@ -1138,7 +1139,7 @@ void vk_command_buffer::end () const
         throw AGE_RESULT::ERROR_GRAPHICS_END_COMMAND_BUFFER;
     }
 }
-
+*/
 
 vk_command_buffers::vk_command_buffers (
     const VkDevice& device, 
@@ -1323,11 +1324,11 @@ void vk_image::change_layout (
 		subresource_range
 	};
 
-    vk_command_buffer cmd_buffer (device, command_pool);
+    vk_command_buffers cmd_buffer (device, command_pool, 1);
     cmd_buffer.begin (VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
     vkCmdPipelineBarrier (
-        cmd_buffer.command_buffer,
+        cmd_buffer.command_buffers[0],
         src_pipeline_stage,
         dst_pipeline_stage,
         0,
@@ -1342,7 +1343,7 @@ void vk_image::change_layout (
     cmd_buffer.end ();
 
     vk_queue one_time_submit_queue (device, queue);
-    one_time_submit_queue.submit (std::vector<VkCommandBuffer>{ cmd_buffer.command_buffer });
+    one_time_submit_queue.submit (std::vector<VkCommandBuffer>{ cmd_buffer.command_buffers[0] });
     
     vkQueueWaitIdle (queue);
 }
@@ -1407,5 +1408,266 @@ vk_image_view::~vk_image_view () noexcept
     if (image_view != VK_NULL_HANDLE && device != VK_NULL_HANDLE)
     {
         vkDestroyImageView (device, image_view, nullptr);
+    }
+}
+
+
+
+vk_descriptor_pool::vk_descriptor_pool (
+    const VkDevice& device,
+    const std::vector<VkDescriptorPoolSize>& pool_sizes,
+    const uint32_t& max_sets) : device (device)
+{
+    printf ("vk_descriptor_pool::vk_descriptor_pool\n");
+
+    VkDescriptorPoolCreateInfo create_info = {
+        VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+        nullptr,
+        VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
+        max_sets,
+        pool_sizes.size (),
+        pool_sizes.data ()
+    };
+
+    VkResult result = vkCreateDescriptorPool (device, &create_info, nullptr, &descriptor_pool);
+    if (result != VK_SUCCESS)
+    {
+        throw AGE_RESULT::ERROR_GRAPHICS_CREATE_DESCRIPTOR_POOL;
+    }
+}
+
+vk_descriptor_pool::vk_descriptor_pool (vk_descriptor_pool&& other) noexcept
+{
+    printf ("vk_descriptor_pool move ctor\n");
+
+    *this = std::move (other);
+}
+
+vk_descriptor_pool& vk_descriptor_pool::operator=(vk_descriptor_pool&& other) noexcept
+{
+    printf ("vk_descriptor_pool move assignment\n");
+
+    descriptor_pool = other.descriptor_pool;
+    device = other.device;
+
+    other.descriptor_pool = VK_NULL_HANDLE;
+    other.device = VK_NULL_HANDLE;
+
+    return *this;
+}
+
+vk_descriptor_pool::~vk_descriptor_pool () noexcept
+{
+    printf ("vk_descriptor_pool::~vk_descriptor_pool\n");
+
+    if (descriptor_pool != VK_NULL_HANDLE && device != VK_NULL_HANDLE)
+    {
+        vkDestroyDescriptorPool (device, descriptor_pool, nullptr);
+    }
+}
+
+
+
+vk_descriptor_set_layout::vk_descriptor_set_layout (
+    const VkDevice& device,
+    const std::vector<VkDescriptorSetLayoutBinding>& bindings) : device (device)
+{
+    printf ("vk_descriptor_set_layout::vk_descriptor_set_layout\n");
+
+    VkDescriptorSetLayoutCreateInfo create_info = {
+        VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+        nullptr,
+        0,
+        bindings.size (),
+        bindings.data ()
+    };
+
+    VkResult result = vkCreateDescriptorSetLayout (device, &create_info, nullptr, &descriptor_set_layout);
+    if (result != VK_SUCCESS)
+    {
+        throw AGE_RESULT::ERROR_GRAPHICS_CREATE_DESCRIPTOR_SET_LAYOUT;
+    }
+}
+
+vk_descriptor_set_layout::vk_descriptor_set_layout (vk_descriptor_set_layout&& other) noexcept
+{
+    printf ("vk_descriptor_set_layout move ctor\n");
+
+    *this = std::move (other);
+}
+
+vk_descriptor_set_layout& vk_descriptor_set_layout::operator= (vk_descriptor_set_layout&& other) noexcept
+{
+    printf ("vk_descriptor_set_layout move assignment\n");
+
+    descriptor_set_layout = other.descriptor_set_layout;
+    device = other.device;
+
+    other.descriptor_set_layout = VK_NULL_HANDLE;
+    other.device = VK_NULL_HANDLE;
+
+    return *this;
+}
+
+vk_descriptor_set_layout::~vk_descriptor_set_layout () noexcept
+{
+    printf ("vk_descriptor_set_layout::~vk_descriptor_set_layout\n");
+
+    if (descriptor_set_layout != VK_NULL_HANDLE && device != VK_NULL_HANDLE)
+    {
+        vkDestroyDescriptorSetLayout (device, descriptor_set_layout, nullptr);
+    }
+}
+
+vk_descriptor_sets::vk_descriptor_sets (
+    const VkDevice& device,
+    const VkDescriptorPool& descriptor_pool,
+    const std::vector<VkDescriptorSetLayout>& descriptor_set_layout
+    ) : device (device), descriptor_pool (descriptor_pool)
+{
+    printf ("vk_descriptor_sets::vk_descriptor_sets\n");
+
+    VkDescriptorSetAllocateInfo allocate_info = {
+        VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+		nullptr,
+		descriptor_pool,
+		descriptor_set_layout.size (),
+		descriptor_set_layout.data ()
+    };
+
+    descriptor_sets.resize (descriptor_set_layout.size ());
+
+    VkResult result = vkAllocateDescriptorSets (
+        device, &allocate_info, descriptor_sets.data ()
+    );
+
+    if (result != VK_SUCCESS)
+    {
+        throw AGE_RESULT::ERROR_GRAPHICS_ALLOCATE_DESCRIPTOR_SETS;
+    }
+}
+
+vk_descriptor_sets::vk_descriptor_sets (vk_descriptor_sets&& other) noexcept
+{
+    printf ("vk_descriptor_sets move ctor\n");
+
+    *this = std::move (other);
+}
+
+vk_descriptor_sets& vk_descriptor_sets::operator= (vk_descriptor_sets&& other) noexcept
+{
+    printf ("vk_descriptor_sets move assignment\n");
+
+    descriptor_sets = other.descriptor_sets;
+    descriptor_pool = other.descriptor_pool;
+    device = other.device;
+
+    other.descriptor_sets.clear ();
+    other.descriptor_pool = VK_NULL_HANDLE;
+    other.device = VK_NULL_HANDLE;
+
+    return *this;
+}
+
+vk_descriptor_sets::~vk_descriptor_sets () noexcept
+{
+    printf ("vk_descriptor_sets::~vk_descriptor_sets\n");
+
+    if (descriptor_sets.size () > 0 && 
+        descriptor_pool != VK_NULL_HANDLE &&
+        device != VK_NULL_HANDLE)
+    {
+        vkFreeDescriptorSets (
+            device, descriptor_pool, 
+            descriptor_sets.size (), descriptor_sets.data ()
+        );
+    }
+}
+
+void vk_descriptor_sets::update (const std::vector<VkWriteDescriptorSet>& descriptor_set_writes) const
+{
+    vkUpdateDescriptorSets (
+        device, descriptor_set_writes.size (), descriptor_set_writes.data (), 
+        0, nullptr);
+}
+
+vk_shader_module::vk_shader_module (
+    const VkDevice& device, 
+    const std::vector<uint32_t> shader_code) : device (device)
+{
+    printf ("vk_shader_module::vk_shader_module\n");
+
+    VkShaderModuleCreateInfo create_info = {
+        VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+		nullptr,
+		0,
+		shader_code.size (),
+		shader_code.data ()
+    };
+
+    VkResult result = vkCreateShaderModule (device, &create_info, nullptr, &shader_module);
+    if (result != VK_SUCCESS) 
+    {
+        throw AGE_RESULT::ERROR_GRAPHICS_CREATE_SHADER_MODULE;
+    }
+}
+
+vk_shader_module::vk_shader_module (vk_shader_module&& other) noexcept
+{
+    printf ("vk_shader_module move ctor\n");
+
+    *this = std::move (other);
+}
+
+vk_shader_module& vk_shader_module::operator= (vk_shader_module&& other) noexcept
+{
+    printf ("vk_shader_module move assignment\n");
+
+    shader_module = other.shader_module;
+    device = other.device;
+
+    other.shader_module = VK_NULL_HANDLE;
+    other.device = VK_NULL_HANDLE;
+
+    return *this;
+}
+
+vk_shader_module::~vk_shader_module () noexcept
+{
+    printf ("vk_shader_module::~vk_shader_module\n");
+
+    if (shader_module != VK_NULL_HANDLE && device != VK_NULL_HANDLE)
+    {
+        vkDestroyShaderModule (device, shader_module, nullptr);
+    }
+}
+
+vk_graphics_pipeline::vk_graphics_pipeline (vk_graphics_pipeline&& other) noexcept
+{
+    printf ("vk_graphics_pipeline move ctor\n");
+
+    *this = std::move (other);
+}
+
+vk_graphics_pipeline& vk_graphics_pipeline::operator=(vk_graphics_pipeline&& other) noexcept
+{
+    printf ("vk_graphics_pipeline move assignment\n");
+
+    graphics_pipeline = other.graphics_pipeline;
+    device = other.device;
+
+    other.graphics_pipeline = VK_NULL_HANDLE;
+    other.device = VK_NULL_HANDLE;
+
+    return *this;
+}
+
+vk_graphics_pipeline::~vk_graphics_pipeline () noexcept
+{
+    printf ("vk_graphics_pipeline::vk_graphics_pipeline\n");
+
+    if (graphics_pipeline != VK_NULL_HANDLE && device != VK_NULL_HANDLE)
+    {
+        vkDestroyPipeline (device, graphics_pipeline, nullptr);
     }
 }

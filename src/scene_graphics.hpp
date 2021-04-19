@@ -19,6 +19,7 @@ private:
 
     void create_geometry_buffers ();
     void create_image_buffers ();
+    void create_graphics_pipeline ();
 
     const common_graphics* common_graphics_obj;
 
@@ -38,6 +39,11 @@ private:
     vk_image_view player_image_view;
     vk_image_view asteroid_image_view;
     vk_image_view bullet_image_view;
+
+    vk_graphics_pipeline_layout graphics_pipeline_layout;
+
+    vk_shader_module vertex_shader_module;
+    vk_shader_module fragment_shader_module;
 };
 
 #endif

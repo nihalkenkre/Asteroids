@@ -1,7 +1,9 @@
 #include "scene_graphics.hpp"
 #include "utils.hpp"
-
 #include "error.hpp"
+#include "actor_vert.hpp"
+#include "actor_frag.hpp"
+
 #include <cstdio>
 
 
@@ -11,6 +13,7 @@ scene_graphics::scene_graphics (const common_graphics* common_graphics_obj) : co
 
     create_geometry_buffers ();
     create_image_buffers ();
+    create_graphics_pipeline ();
 }
 
 
@@ -264,5 +267,18 @@ void scene_graphics::create_image_buffers ()
         bullet_image.vk_img,
         VK_IMAGE_VIEW_TYPE_2D,
         VK_FORMAT_R8G8B8A8_UNORM
+    );
+}
+
+void scene_graphics::create_graphics_pipeline ()
+{
+    vertex_shader_module = vk_shader_module (
+        common_graphics_obj->graphics_device.graphics_device,
+        std::vector<uint32_t> {std::begin (actor_vert), std::end (actor_vert)}
+    );
+
+    fragment_shader_module = vk_shader_module (
+        common_graphics_obj->graphics_device.graphics_device,
+        std::vector<uint32_t> {std::begin (actor_frag), std::end (actor_frag)}
     );
 }

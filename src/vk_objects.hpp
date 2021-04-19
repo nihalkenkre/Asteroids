@@ -303,7 +303,7 @@ private:
         const VkMemoryPropertyFlags required_types);
 };
 
-class vk_command_buffer
+/*class vk_command_buffer
 {
 public:
     vk_command_buffer () : command_buffer (VK_NULL_HANDLE), command_pool (VK_NULL_HANDLE), device (VK_NULL_HANDLE) {}
@@ -328,7 +328,7 @@ public:
 private:
     VkCommandPool command_pool;
     VkDevice device;
-};
+};*/
 
 
 class vk_command_buffers
@@ -417,16 +417,130 @@ private:
     VkDevice device;
 };
 
+
+class vk_descriptor_pool
+{
+public:
+    vk_descriptor_pool () : descriptor_pool (VK_NULL_HANDLE), device (VK_NULL_HANDLE) {}
+    vk_descriptor_pool (
+        const VkDevice& device,
+        const std::vector<VkDescriptorPoolSize>& pool_sizes,
+        const uint32_t& max_sets
+    );
+
+    vk_descriptor_pool (const vk_descriptor_pool& other) = delete;
+    vk_descriptor_pool& operator= (const vk_descriptor_pool& other) = delete;
+
+    vk_descriptor_pool (vk_descriptor_pool&& other) noexcept;
+    vk_descriptor_pool& operator= (vk_descriptor_pool&& other) noexcept;
+
+    ~vk_descriptor_pool () noexcept;
+
+
+    VkDescriptorPool descriptor_pool;
+
+private:
+    VkDevice device;
+};
+
+
+class vk_descriptor_set_layout
+{
+public:
+    vk_descriptor_set_layout () : descriptor_set_layout (VK_NULL_HANDLE), device (VK_NULL_HANDLE) {}
+
+    vk_descriptor_set_layout (
+        const VkDevice& device,
+        const std::vector<VkDescriptorSetLayoutBinding>& bindings
+    );
+
+    vk_descriptor_set_layout (const vk_descriptor_set_layout& other) = delete;
+    vk_descriptor_set_layout& operator= (const vk_descriptor_set_layout& other) = delete;
+
+    vk_descriptor_set_layout (vk_descriptor_set_layout&& other) noexcept;
+    vk_descriptor_set_layout& operator= (vk_descriptor_set_layout&& other) noexcept;
+
+    ~vk_descriptor_set_layout () noexcept;
+
+    VkDescriptorSetLayout descriptor_set_layout;
+
+private:
+    VkDevice device;
+};
+
+
+class vk_descriptor_sets
+{
+public:
+    vk_descriptor_sets () : descriptor_pool (VK_NULL_HANDLE), device (VK_NULL_HANDLE) {}
+
+    vk_descriptor_sets (
+        const VkDevice& device,
+        const VkDescriptorPool& descriptor_pool,
+        const std::vector<VkDescriptorSetLayout>& descriptor_set_layout
+    );
+
+    vk_descriptor_sets (const vk_descriptor_sets& other) = delete;
+    vk_descriptor_sets& operator= (const vk_descriptor_sets& other) = delete;
+
+    vk_descriptor_sets (vk_descriptor_sets&& other) noexcept;
+    vk_descriptor_sets& operator= (vk_descriptor_sets&& other) noexcept;
+
+    ~vk_descriptor_sets () noexcept;
+
+    void update (const std::vector<VkWriteDescriptorSet>& descriptor_set_writes) const;
+
+    std::vector<VkDescriptorSet> descriptor_sets;
+
+private:
+    VkDescriptorPool descriptor_pool;
+    VkDevice device;
+};
+
+
+class vk_graphics_pipeline_layout
+{
+public:
+    vk_graphics_pipeline_layout () : graphics_pipeline_layout (VK_NULL_HANDLE), device (VK_NULL_HANDLE) {}
+
+    vk_graphics_pipeline_layout (const vk_graphics_pipeline_layout& other) = delete;
+    vk_graphics_pipeline_layout& operator= (const vk_graphics_pipeline_layout& other) = delete;
+
+    vk_graphics_pipeline_layout (vk_graphics_pipeline_layout&& other) noexcept {}
+    vk_graphics_pipeline_layout& operator= (vk_graphics_pipeline_layout&& other) noexcept {}
+
+    ~vk_graphics_pipeline_layout () noexcept {}
+
+    VkPipelineLayout graphics_pipeline_layout;
+
+private:
+    VkDevice device;
+};
+
+
 class vk_shader_module
 {
 public:
     vk_shader_module () : shader_module (VK_NULL_HANDLE), device (VK_NULL_HANDLE) {}
+    vk_shader_module (
+        const VkDevice& device,
+        const std::vector<uint32_t> shader_code
+    );
+
+    vk_shader_module (const vk_shader_module& other) = delete;
+    vk_shader_module& operator= (const vk_shader_module& other) = delete;
+
+    vk_shader_module (vk_shader_module&& other) noexcept;
+    vk_shader_module& operator= (vk_shader_module&& other) noexcept;
+
+    ~vk_shader_module () noexcept;
 
     VkShaderModule shader_module;
 
 private:
     VkDevice device;
 };
+
 
 class vk_graphics_pipeline
 {
