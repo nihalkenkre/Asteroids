@@ -43,7 +43,7 @@ full_file_path::full_file_path (const std::string& partial_file_path)
 
 mesh_data::mesh_data ()
 {
-	printf ("mesh::mesh\n");
+	printf ("mesh_data::mesh_data\n");
 
 	positions = std::vector<float>{ -1.f,-1.f, 1.f,-1.f, 1.f,1.f, -1.f,1.f };
 	uvs = std::vector<float>{ 1,1, 0,1, 0,0, 1,0 };
@@ -59,7 +59,7 @@ mesh_data::mesh_data ()
 
 image_data::image_data (const std::string& partial_file_path)
 {
-	printf ("image::image\n");
+	printf ("image_data::image_data\n");
 
 	full_file_path ffp (partial_file_path);
 	uint8_t* p = stbi_load (ffp.path.c_str (), &(int)width, &(int)height, &(int)bpp, 4);

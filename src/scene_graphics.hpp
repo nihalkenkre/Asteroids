@@ -15,8 +15,6 @@ public:
     scene_graphics (scene_graphics&& other) = delete;
     scene_graphics& operator= (scene_graphics&& other) = delete;
 
-    ~scene_graphics ();
-
 private:
 
     void create_geometry_buffers ();
@@ -30,6 +28,16 @@ private:
     vk_device_memory vertex_index_device_memory;
 
     vk_device_memory images_device_memory;
+
+    vk_image background_image;
+    vk_image player_image;
+    vk_image asteroid_image;
+    vk_image bullet_image;
+
+    vk_image_view background_image_view;
+    vk_image_view player_image_view;
+    vk_image_view asteroid_image_view;
+    vk_image_view bullet_image_view;
 };
 
 #endif

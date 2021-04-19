@@ -10,13 +10,9 @@ scene_graphics::scene_graphics (const common_graphics* common_graphics_obj) : co
     printf ("scene_graphics::scene_graphics\n");
 
     create_geometry_buffers ();
-    //create_image_buffers ();
+    create_image_buffers ();
 }
 
-scene_graphics::~scene_graphics ()
-{
-    
-}
 
 void scene_graphics::create_geometry_buffers ()
 {
@@ -115,10 +111,10 @@ void scene_graphics::create_image_buffers ()
 
     staging_memory.unmap ();
 
-    vk_image background_image (common_graphics_obj->graphics_device.graphics_device, background_image_data);
-    vk_image player_image (common_graphics_obj->graphics_device.graphics_device, player_image_data);
-    vk_image asteroid_image (common_graphics_obj->graphics_device.graphics_device, asteroid_image_data);
-    vk_image bullet_image (common_graphics_obj->graphics_device.graphics_device, bullet_image_data);
+    background_image = vk_image (common_graphics_obj->graphics_device.graphics_device, background_image_data);
+    player_image = vk_image (common_graphics_obj->graphics_device.graphics_device, player_image_data);
+    asteroid_image = vk_image (common_graphics_obj->graphics_device.graphics_device, asteroid_image_data);
+    bullet_image = vk_image (common_graphics_obj->graphics_device.graphics_device, bullet_image_data);
 
     std::vector<VkImage> vk_images{ background_image.vk_img, player_image.vk_img, asteroid_image.vk_img, bullet_image.vk_img };
 
@@ -190,7 +186,7 @@ void scene_graphics::create_image_buffers ()
         common_graphics_obj->transfer_queue
     );
 
-        background_image.change_layout (
+    background_image.change_layout (
         VK_ACCESS_TRANSFER_WRITE_BIT,
         VK_ACCESS_SHADER_READ_BIT,
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -242,5 +238,31 @@ void scene_graphics::create_image_buffers ()
         common_graphics_obj->transfer_queue
     );
 
-    
+    background_image_view = vk_image_view (
+        common_graphics_obj->graphics_device.graphics_device,
+        background_image.vk_img,
+        VK_IMAGE_VIEW_TYPE_2D,
+        VK_FORMAT_R8G8B8A8_UNORM
+    );
+
+    player_image_view = vk_image_view (
+        common_graphics_obj->graphics_device.graphics_device,
+        player_image.vk_img,
+        VK_IMAGE_VIEW_TYPE_2D,
+        VK_FORMAT_R8G8B8A8_UNORM
+    );
+
+    asteroid_image_view = vk_image_view (
+        common_graphics_obj->graphics_device.graphics_device,
+        asteroid_image.vk_img,
+        VK_IMAGE_VIEW_TYPE_2D,
+        VK_FORMAT_R8G8B8A8_UNORM
+    );
+
+    bullet_image_view = vk_image_view (
+        common_graphics_obj->graphics_device.graphics_device,
+        bullet_image.vk_img,
+        VK_IMAGE_VIEW_TYPE_2D,
+        VK_FORMAT_R8G8B8A8_UNORM
+    );
 }

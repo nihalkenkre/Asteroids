@@ -397,7 +397,54 @@ private:
 class vk_image_view
 {
 public:
-    vk_image_view () {}
+    vk_image_view () : image_view (VK_NULL_HANDLE), device (VK_NULL_HANDLE) {}
+    vk_image_view (
+        const VkDevice& device, const VkImage& image,
+        const VkImageViewType& type, const VkFormat& format
+    );
+
+    vk_image_view (const vk_image_view& other) = delete;
+    vk_image_view& operator= (const vk_image_view& other) = delete;
+
+    vk_image_view (vk_image_view&& other) noexcept;
+    vk_image_view& operator= (vk_image_view&& other) noexcept;
+
+    ~vk_image_view () noexcept;
+
+    VkImageView image_view;
+
+private:
+    VkDevice device;
+};
+
+class vk_shader_module
+{
+public:
+    vk_shader_module () : shader_module (VK_NULL_HANDLE), device (VK_NULL_HANDLE) {}
+
+    VkShaderModule shader_module;
+
+private:
+    VkDevice device;
+};
+
+class vk_graphics_pipeline
+{
+public:
+    vk_graphics_pipeline () : graphics_pipeline (VK_NULL_HANDLE), device (VK_NULL_HANDLE) {}
+
+    vk_graphics_pipeline (const vk_graphics_pipeline& other) = delete;
+    vk_graphics_pipeline& operator= (const vk_graphics_pipeline& other) = delete;
+
+    vk_graphics_pipeline (vk_graphics_pipeline&& other) noexcept;
+    vk_graphics_pipeline& operator= (vk_graphics_pipeline&& other) noexcept;
+
+    ~vk_graphics_pipeline () noexcept;
+
+    VkPipeline graphics_pipeline;
+
+private:
+    VkDevice device;
 };
 
 #endif 
