@@ -862,7 +862,7 @@ AGE_RESULT graphics_create_descriptor_sets_pipeline_layout ()
 		},
 		{
 			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-			5
+			4
 		}
 	};
 

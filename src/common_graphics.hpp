@@ -25,9 +25,6 @@ public:
 	vk_swapchain swapchain;
 	vk_sampler common_sampler;
 	vk_command_pool transfer_command_pool;
-	//vk_queue_family_indices queue_family_indices;
-	//vk_queue_info queue_infos;
-	//vk_device_queues device_queues;
 
 	std::vector<VkImage> swapchain_images;
 	std::vector<vk_image_view> swapchain_image_views;

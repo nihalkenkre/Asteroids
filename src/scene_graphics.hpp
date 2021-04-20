@@ -8,7 +8,11 @@
 #include "vk_objects/vk_device_memory.hpp"
 #include "vk_objects/vk_image.hpp"
 #include "vk_objects/vk_image_view.hpp"
+#include "vk_objects/vk_descriptor_pool.hpp"
+#include "vk_objects/vk_descriptor_set_layout.hpp"
+#include "vk_objects/vk_descriptor_sets.hpp"
 #include "vk_objects/vk_graphics_pipeline_layout.hpp"
+#include "vk_objects/vk_render_pass.hpp"
 #include "vk_objects/vk_shader_module.hpp"
 
 class scene_graphics
@@ -27,6 +31,9 @@ private:
     void create_geometry_buffers ();
     void create_image_buffers ();
     void create_graphics_pipeline ();
+    void create_descriptor_sets ();
+    void create_graphics_pipeline_set_layout ();
+    void create_swapchain_render_pass ();
 
     const common_graphics* common_graphics_obj;
 
@@ -47,7 +54,16 @@ private:
     vk_image_view asteroid_image_view;
     vk_image_view bullet_image_view;
 
+    vk_descriptor_pool descriptor_pool;
+
     vk_graphics_pipeline_layout graphics_pipeline_layout;
+    vk_descriptor_set_layout transform_descriptor_set_layout;
+    vk_descriptor_set_layout texture_descriptor_set_layout;
+
+    vk_descriptor_set transform_descriptor_set;
+    vk_descriptor_set texture_descriptor_set;
+
+    vk_render_pass render_pass;
 
     vk_shader_module vertex_shader_module;
     vk_shader_module fragment_shader_module;

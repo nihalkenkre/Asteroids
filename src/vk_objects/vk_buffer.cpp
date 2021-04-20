@@ -88,22 +88,16 @@ void vk_buffer::copy_to_buffer (
     const VkCommandPool& command_pool, 
     const VkQueue& transfer_queue) const
 {
-    vk_command_buffers copy_cmd_buffers = vk_command_buffers (
-        device,
-        command_pool,
-        1
-    );
+    vk_command_buffer copy_cmd_buffer (device, command_pool);
 
-    copy_cmd_buffers.begin (VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-    VkBufferCopy buffer_copy = {
-        0, 0, size
-    };
+    copy_cmd_buffer.begin (VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+    VkBufferCopy buffer_copy = { 0, 0, size };
 
-    vkCmdCopyBuffer (copy_cmd_buffers.command_buffers[0], buffer, dst_buffer, 1, &buffer_copy);
-    copy_cmd_buffers.end ();
+    vkCmdCopyBuffer (copy_cmd_buffer.command_buffer, buffer, dst_buffer, 1, &buffer_copy);
+    copy_cmd_buffer.end ();
 
     vk_queue queue (device, transfer_queue);
-    queue.submit (copy_cmd_buffers.command_buffers);
+    queue.submit (std::vector<VkCommandBuffer> {copy_cmd_buffer.command_buffer});
     vkQueueWaitIdle (queue.queue);
 }
 
@@ -132,7 +126,7 @@ void vk_buffer::copy_to_images (
 		{0,0,0}
 	};
 
-    vk_command_buffers copy_cmd_buffer (device, command_pool, 1);
+    vk_command_buffer copy_cmd_buffer (device, command_pool);
     copy_cmd_buffer.begin (VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
     uint32_t current_index = 0;
@@ -143,7 +137,7 @@ void vk_buffer::copy_to_images (
         buffer_image_copy.imageExtent = extents[current_index];
 
         vkCmdCopyBufferToImage (
-            copy_cmd_buffer.command_buffers[0],
+            copy_cmd_buffer.command_buffer,
             buffer,
             i,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -157,6 +151,6 @@ void vk_buffer::copy_to_images (
     copy_cmd_buffer.end ();
 
     vk_queue one_time_submit (device, transfer_queue);
-    one_time_submit.submit ({copy_cmd_buffer.command_buffers[0]});
+    one_time_submit.submit ({ copy_cmd_buffer.command_buffer });
 }
 

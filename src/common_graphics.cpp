@@ -22,14 +22,7 @@ common_graphics::common_graphics (const HINSTANCE& h_instance, const HWND& h_wnd
         h_wnd,
         graphics_queue_family_index
     );
-/*    queue_infos = vk_queue_info (queue_family_indices);
 
-    device_queues = vk_device_queues (
-        physical_device.physical_device,
-        graphics_device.graphics_device,
-        queue_family_indices,
-        queue_infos.queue_indices
-    );*/
     get_queue_create_infos_indices ();
     graphics_device = vk_graphics_device (
         physical_device.physical_device,

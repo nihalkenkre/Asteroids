@@ -53,7 +53,7 @@ public:
     void begin (const VkCommandBufferUsageFlags& flags) const;
     void end () const;
 
-    std::vector<VkCommandBuffer> command_buffers;
+    std::vector<vk_command_buffer> command_buffers;
 
 private:
     VkCommandPool command_pool;

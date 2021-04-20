@@ -12,16 +12,16 @@ public:
     vk_graphics_pipeline_layout (
         const VkDevice& device,
         const std::vector<VkDescriptorSetLayout>& descriptor_set_layouts,
-        const std::vector<VkPushConstantRange>& push_constant_range
-    ) {}
+        const std::vector<VkPushConstantRange>& push_constant_ranges
+    );
 
     vk_graphics_pipeline_layout (const vk_graphics_pipeline_layout& other) = delete;
     vk_graphics_pipeline_layout& operator= (const vk_graphics_pipeline_layout& other) = delete;
 
-    vk_graphics_pipeline_layout (vk_graphics_pipeline_layout&& other) noexcept {}
-    vk_graphics_pipeline_layout& operator= (vk_graphics_pipeline_layout&& other) noexcept {}
+    vk_graphics_pipeline_layout (vk_graphics_pipeline_layout&& other) noexcept;
+    vk_graphics_pipeline_layout& operator= (vk_graphics_pipeline_layout&& other) noexcept;
 
-    ~vk_graphics_pipeline_layout () noexcept {}
+    ~vk_graphics_pipeline_layout () noexcept;
 
     VkPipelineLayout graphics_pipeline_layout;
 

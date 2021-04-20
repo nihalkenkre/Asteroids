@@ -13,7 +13,9 @@ scene_graphics::scene_graphics (const common_graphics* common_graphics_obj) : co
 
     create_geometry_buffers ();
     create_image_buffers ();
-    create_graphics_pipeline ();
+    create_descriptor_sets ();
+    create_graphics_pipeline_set_layout ();
+    create_swapchain_render_pass ();
 }
 
 
@@ -276,5 +278,164 @@ void scene_graphics::create_graphics_pipeline ()
     fragment_shader_module = vk_shader_module (
         common_graphics_obj->graphics_device.graphics_device,
         std::vector<uint32_t> {std::begin (actor_frag), std::end (actor_frag)}
+    );
+}
+
+void scene_graphics::create_descriptor_sets ()
+{
+    std::vector<VkDescriptorPoolSize> pool_sizes{
+        {
+            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
+            1
+        },
+        {
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+            4
+        }
+    };
+
+    descriptor_pool = vk_descriptor_pool (
+        common_graphics_obj->graphics_device.graphics_device,
+        pool_sizes,
+        2
+    );
+
+    VkDescriptorSetLayoutBinding transform_layout_binding {
+        0,
+        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
+        1,
+        VK_SHADER_STAGE_VERTEX_BIT,
+        nullptr
+    };
+
+    transform_descriptor_set_layout = vk_descriptor_set_layout (
+        common_graphics_obj->graphics_device.graphics_device,
+        std::vector<VkDescriptorSetLayoutBinding> {transform_layout_binding}
+    );
+
+    VkDescriptorSetLayoutBinding texture_layout_binding {
+        0,
+        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+        4,
+        VK_SHADER_STAGE_FRAGMENT_BIT,
+        nullptr
+    };
+
+    texture_descriptor_set_layout = vk_descriptor_set_layout (
+        common_graphics_obj->graphics_device.graphics_device,
+        std::vector<VkDescriptorSetLayoutBinding> {texture_layout_binding}
+    );
+
+    transform_descriptor_set = vk_descriptor_set (
+        common_graphics_obj->graphics_device.graphics_device,
+        descriptor_pool.descriptor_pool,
+        transform_descriptor_set_layout.descriptor_set_layout
+    );
+
+    texture_descriptor_set = vk_descriptor_set (
+        common_graphics_obj->graphics_device.graphics_device,
+        descriptor_pool.descriptor_pool,
+        texture_descriptor_set_layout.descriptor_set_layout
+    );
+
+    std::vector<VkDescriptorImageInfo> image_infos{
+        {
+            common_graphics_obj->common_sampler.sampler,
+            background_image_view.image_view,
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+        },
+        {
+            common_graphics_obj->common_sampler.sampler,
+            player_image_view.image_view,
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+        },
+        {
+            common_graphics_obj->common_sampler.sampler,
+            asteroid_image_view.image_view,
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+        },
+        {
+            common_graphics_obj->common_sampler.sampler,
+            bullet_image_view.image_view,
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+        }
+    };
+
+
+    VkWriteDescriptorSet texture_descriptor_set_write{
+        VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        nullptr,
+        texture_descriptor_set.descriptor_set,
+        0,
+        0,
+        static_cast<uint32_t> (image_infos.size ()),
+        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+        image_infos.data (),
+        nullptr,
+        nullptr
+    };
+
+    transform_descriptor_set.update (texture_descriptor_set_write);
+}
+
+void scene_graphics::create_graphics_pipeline_set_layout ()
+{
+    std::vector<VkPushConstantRange> push_constant_ranges{
+        {
+            VK_SHADER_STAGE_VERTEX_BIT,
+            0,
+            sizeof (float)
+        },
+        {
+            VK_SHADER_STAGE_FRAGMENT_BIT,
+            sizeof (float),
+            sizeof (uint32_t)
+        }
+    };
+
+    graphics_pipeline_layout = vk_graphics_pipeline_layout (
+        common_graphics_obj->graphics_device.graphics_device,
+        std::vector<VkDescriptorSetLayout>{transform_descriptor_set_layout.descriptor_set_layout, texture_descriptor_set_layout.descriptor_set_layout},
+        push_constant_ranges
+    );
+}
+
+void scene_graphics::create_swapchain_render_pass ()
+{
+    VkAttachmentDescription color_attachment_description = {
+        0,
+        common_graphics_obj->surface.format.format,
+        VK_SAMPLE_COUNT_1_BIT,
+        VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+        VK_ATTACHMENT_STORE_OP_STORE,
+        VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+        VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+    };
+
+    VkAttachmentReference color_attachment_reference = {
+        0,
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+    };
+
+    VkSubpassDescription color_subpass_description = {
+        0,
+        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        0,
+        nullptr,
+        1,
+        &color_attachment_reference,
+        nullptr,
+        nullptr,
+        0,
+        nullptr
+    };
+
+    render_pass = vk_render_pass (
+        common_graphics_obj->graphics_device.graphics_device,
+        std::vector<VkAttachmentDescription> {color_attachment_description},
+        std::vector<VkAttachmentReference> {color_attachment_reference},
+        std::vector<VkSubpassDescription> {color_subpass_description}
     );
 }

@@ -97,11 +97,11 @@ void vk_image::change_layout (
 		subresource_range
 	};
 
-    vk_command_buffers cmd_buffer (device, command_pool, 1);
+    vk_command_buffer cmd_buffer (device, command_pool);
     cmd_buffer.begin (VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
     vkCmdPipelineBarrier (
-        cmd_buffer.command_buffers[0],
+        cmd_buffer.command_buffer,
         src_pipeline_stage,
         dst_pipeline_stage,
         0,
@@ -116,7 +116,7 @@ void vk_image::change_layout (
     cmd_buffer.end ();
 
     vk_queue one_time_submit_queue (device, queue);
-    one_time_submit_queue.submit (std::vector<VkCommandBuffer>{ cmd_buffer.command_buffers[0] });
+    one_time_submit_queue.submit (std::vector<VkCommandBuffer>{ cmd_buffer.command_buffer });
     
     vkQueueWaitIdle (queue);
 }
