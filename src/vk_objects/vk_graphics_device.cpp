@@ -14,11 +14,11 @@ vk_graphics_device::vk_graphics_device (const VkPhysicalDevice& physical_device,
         VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
         nullptr,
         0,
-        queue_create_infos.size (),
+        static_cast<uint32_t> (queue_create_infos.size ()),
         queue_create_infos.data (),
         0,
         nullptr,
-        requested_device_extensions.size (),
+        static_cast<uint32_t> (requested_device_extensions.size ()),
         requested_device_extensions.data (),
         nullptr
     };

@@ -136,7 +136,7 @@ vk_command_buffers::~vk_command_buffers () noexcept
         command_pool != VK_NULL_HANDLE && 
         device != VK_NULL_HANDLE)
     {
-        vkFreeCommandBuffers (device, command_pool, command_buffers.size (), command_buffers.data ());
+        vkFreeCommandBuffers (device, command_pool, static_cast<uint32_t> (command_buffers.size ()), command_buffers.data ());
     }
 }
 

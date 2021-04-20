@@ -32,7 +32,7 @@ vk_instance::vk_instance ()
         &application_info, 
         0,
         nullptr,
-        requested_extensions.size (),
+        static_cast<uint32_t> (requested_extensions.size ()),
         requested_extensions.data ()
     };
 

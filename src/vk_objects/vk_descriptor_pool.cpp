@@ -15,7 +15,7 @@ vk_descriptor_pool::vk_descriptor_pool (
         nullptr,
         VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
         max_sets,
-        pool_sizes.size (),
+        static_cast<uint32_t> (pool_sizes.size ()),
         pool_sizes.data ()
     };
 

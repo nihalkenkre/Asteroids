@@ -14,7 +14,7 @@ vk_descriptor_sets::vk_descriptor_sets (
         VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
 		nullptr,
 		descriptor_pool,
-		descriptor_set_layout.size (),
+		static_cast<uint32_t> (descriptor_set_layout.size ()),
 		descriptor_set_layout.data ()
     };
 
@@ -62,7 +62,7 @@ vk_descriptor_sets::~vk_descriptor_sets () noexcept
     {
         vkFreeDescriptorSets (
             device, descriptor_pool, 
-            descriptor_sets.size (), descriptor_sets.data ()
+            static_cast<uint32_t> (descriptor_sets.size ()), descriptor_sets.data ()
         );
     }
 }
@@ -75,7 +75,7 @@ void vk_descriptor_sets::update (const std::vector<VkDescriptorImageInfo>& descr
 		descriptor_sets[0],
 		0,
 		0,
-		descriptor_image_infos.size (),
+		static_cast<uint32_t> (descriptor_image_infos.size ()),
 		VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 		descriptor_image_infos.data (),
 		nullptr,

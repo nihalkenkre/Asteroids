@@ -14,10 +14,16 @@ public:
 
     vk_device_memory (
         const VkDevice& device,
-        const std::vector<uint64_t>& vk_type_objects,
+        const std::vector<VkBuffer>& vk_type_objects,
         const VkPhysicalDeviceMemoryProperties& memory_properties,
-        const VkMemoryPropertyFlags required_types,
-        const vk_type& type
+        const VkMemoryPropertyFlags required_types
+    );
+
+    vk_device_memory (
+        const VkDevice& device,
+        const std::vector<VkImage>& vk_type_objects,
+        const VkPhysicalDeviceMemoryProperties& memory_properties,
+        const VkMemoryPropertyFlags required_types
     );
 
     vk_device_memory (const vk_device_memory& other) = delete;

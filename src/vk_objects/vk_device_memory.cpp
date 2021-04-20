@@ -4,32 +4,36 @@
 #include <cstdio>
 
 vk_device_memory::vk_device_memory (
-    const VkDevice& device, 
-    const std::vector<uint64_t>& vk_type_objects, 
-    const VkPhysicalDeviceMemoryProperties& memory_properties, 
-    const VkMemoryPropertyFlags required_types, 
-    const vk_type& type) : device (device)
+    const VkDevice& device,
+    const std::vector<VkBuffer>& vk_type_objects,
+    const VkPhysicalDeviceMemoryProperties& memory_properties,
+    const VkMemoryPropertyFlags required_types) : device (device)
 {
     printf ("vk_device_memory::vk_device_memory vk_types\n");
 
-    if (type == vk_type::buffer)
-    {
-        allocate_bind_buffers (
-            device,
-            vk_type_objects,
-            memory_properties,
-            required_types
-        );
-    }
-    else if (type == vk_type::image)
-    {
-        allocate_bind_images (
-            device,
-            vk_type_objects,
-            memory_properties,
-            required_types
-        );
-    }
+    allocate_bind_buffers (
+        device,
+        vk_type_objects,
+        memory_properties,
+        required_types
+    );
+}
+
+
+vk_device_memory::vk_device_memory (
+    const VkDevice& device,
+    const std::vector<VkImage>& vk_type_objects,
+    const VkPhysicalDeviceMemoryProperties& memory_properties,
+    const VkMemoryPropertyFlags required_types) : device (device)
+{
+    printf ("vk_device_memory::vk_device_memory vk_types\n");
+
+    allocate_bind_images (
+        device,
+        vk_type_objects,
+        memory_properties,
+        required_types
+    );
 }
 
 vk_device_memory::vk_device_memory (vk_device_memory&& other) noexcept

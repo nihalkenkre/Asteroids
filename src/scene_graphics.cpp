@@ -27,8 +27,7 @@ void scene_graphics::create_geometry_buffers ()
 
     vk_device_memory staging_buffer_memory (
         common_graphics_obj->graphics_device.graphics_device, std::vector<VkBuffer> {staging_buffer.buffer},
-        common_graphics_obj->physical_device.memory_properties, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-        vk_type::buffer
+        common_graphics_obj->physical_device.memory_properties, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
     );
 
     HANDLE mapped_data_ptr = staging_buffer_memory.map (0, data_size);
@@ -50,8 +49,7 @@ void scene_graphics::create_geometry_buffers ()
         common_graphics_obj->graphics_device.graphics_device,
         std::vector<VkBuffer>{ vertex_index_buffer.buffer },
         common_graphics_obj->physical_device.memory_properties,
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-        vk_type::buffer
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
     );
 
     staging_buffer.copy_to_buffer(
@@ -74,7 +72,7 @@ void scene_graphics::create_image_buffers ()
     uint32_t total_size = 0;
     for (const auto& i : images)
     {
-        total_size += i.pixels.size ();
+        total_size += static_cast<uint32_t> (i.pixels.size ());
     }
 
     buffer_data b (
@@ -88,8 +86,7 @@ void scene_graphics::create_image_buffers ()
 
     vk_device_memory staging_memory = vk_device_memory (
         common_graphics_obj->graphics_device.graphics_device, std::vector<VkBuffer>{ staging_buffer.buffer },
-        common_graphics_obj->physical_device.memory_properties, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-        vk_type::buffer
+        common_graphics_obj->physical_device.memory_properties, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
     );
 
     HANDLE mapped_data_ptr = staging_memory.map (0, total_size);
@@ -109,7 +106,7 @@ void scene_graphics::create_image_buffers ()
 
         image_extents.emplace_back (VkExtent3D {i.width, i.height, 1});
 
-        current_offset += i.pixels.size ();
+        current_offset += static_cast<uint32_t> (i.pixels.size ());
     }
 
     staging_memory.unmap ();
@@ -125,8 +122,7 @@ void scene_graphics::create_image_buffers ()
         common_graphics_obj->graphics_device.graphics_device,
         vk_images,
         common_graphics_obj->physical_device.memory_properties,
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-        vk_type::image
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
     );
 
     background_image.change_layout (

@@ -12,7 +12,7 @@ vk_descriptor_set_layout::vk_descriptor_set_layout (
         VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
         nullptr,
         0,
-        bindings.size (),
+        static_cast<uint32_t> (bindings.size ()),
         bindings.data ()
     };
 

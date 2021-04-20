@@ -57,7 +57,7 @@ void common_graphics::get_queue_create_infos_indices ()
 
     for (const auto& family_index : family_indices)
     {
-        family_indices_queue_count[family_index] = std::count (family_indices.begin (), family_indices.end (), family_index);
+        family_indices_queue_count[family_index] = static_cast<uint32_t> (std::count (family_indices.begin (), family_indices.end (), family_index));
     }
 
     for (const auto& family_index_family_count : family_indices_queue_count)

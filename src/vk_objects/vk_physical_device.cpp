@@ -41,7 +41,7 @@ std::tuple<uint32_t, uint32_t, uint32_t> vk_physical_device::get_queue_family_in
     uint32_t compute_queue_family_index = 0;
     uint32_t transfer_queue_family_index = 0;
     
-    graphics_queue_family_index = std::distance (queue_family_properties.begin (), 
+    graphics_queue_family_index = static_cast<uint32_t> (std::distance (queue_family_properties.begin (), 
                                                 std::find_if (queue_family_properties.begin (), 
                                                             queue_family_properties.end (), 
                                                             [&](const VkQueueFamilyProperties& family_property) 
@@ -49,7 +49,7 @@ std::tuple<uint32_t, uint32_t, uint32_t> vk_physical_device::get_queue_family_in
                                                                     return (family_property.queueFlags & VK_QUEUE_GRAPHICS_BIT);
                                                                 }
                                                             )
-                                                );
+                                                ));
 
     auto compute_family_index_iter = std::find_if (queue_family_properties.begin (), 
                                                    queue_family_properties.end (), 
@@ -61,11 +61,11 @@ std::tuple<uint32_t, uint32_t, uint32_t> vk_physical_device::get_queue_family_in
 
     if (compute_family_index_iter != queue_family_properties.end ())
     {
-        compute_queue_family_index = std::distance (queue_family_properties.begin (), compute_family_index_iter);
+        compute_queue_family_index = static_cast<uint32_t> (std::distance (queue_family_properties.begin (), compute_family_index_iter));
     }
     else
     {
-        compute_queue_family_index = std::distance (queue_family_properties.begin (), 
+        compute_queue_family_index = static_cast<uint32_t> (std::distance (queue_family_properties.begin (), 
                                                     std::find_if (queue_family_properties.begin (), 
                                                                   queue_family_properties.end (), 
                                                                   [&](const VkQueueFamilyProperties& family_property) 
@@ -73,7 +73,7 @@ std::tuple<uint32_t, uint32_t, uint32_t> vk_physical_device::get_queue_family_in
                                                                       return (family_property.queueFlags & VK_QUEUE_COMPUTE_BIT); 
                                                                   }
                                                                   )
-                                                    );
+                                                    ));
     }
 
     auto transfer_family_index_iter = std::find_if (queue_family_properties.begin (), 
@@ -87,11 +87,11 @@ std::tuple<uint32_t, uint32_t, uint32_t> vk_physical_device::get_queue_family_in
                                                     );
     if (transfer_family_index_iter != queue_family_properties.end ())
     {
-        transfer_queue_family_index = std::distance (queue_family_properties.begin (), transfer_family_index_iter);
+        transfer_queue_family_index = static_cast<uint32_t> (std::distance (queue_family_properties.begin (), transfer_family_index_iter));
     }
     else
     {
-        transfer_queue_family_index = std::distance (queue_family_properties.begin (), 
+        transfer_queue_family_index = static_cast<uint32_t> (std::distance (queue_family_properties.begin (), 
                                                      std::find_if (queue_family_properties.begin (), 
                                                                    queue_family_properties.end (), 
                                                                    [&](const VkQueueFamilyProperties& family_property) 
@@ -99,7 +99,7 @@ std::tuple<uint32_t, uint32_t, uint32_t> vk_physical_device::get_queue_family_in
                                                                             return (family_property.queueFlags & VK_QUEUE_TRANSFER_BIT); 
                                                                         }
                                                                    )
-                                                     );
+                                                     ));
     }
 
     return std::make_tuple (graphics_queue_family_index, compute_queue_family_index, transfer_queue_family_index);

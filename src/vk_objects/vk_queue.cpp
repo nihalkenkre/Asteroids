@@ -15,7 +15,7 @@ void vk_queue::submit (const std::vector<VkCommandBuffer>& commands_buffers) con
         0,
         nullptr,
         0,
-        commands_buffers.size (),
+        static_cast<uint32_t> (commands_buffers.size ()),
         commands_buffers.data (),
         0,
         nullptr

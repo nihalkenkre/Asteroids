@@ -50,10 +50,10 @@ mesh_data::mesh_data ()
 
 	indices = std::vector<uint32_t>{ 0,1,2, 0,2,3 };
 
-	positions_size = positions.size () * sizeof (positions[0]);
-	uvs_size = uvs.size () * sizeof (uvs[0]);
+	positions_size = static_cast<uint32_t> (positions.size () * sizeof (positions[0]));
+	uvs_size = static_cast<uint32_t> (uvs.size () * sizeof (uvs[0]));
 
-	indices_size = indices.size () * sizeof (indices[0]);
+	indices_size = static_cast<uint32_t> (indices.size () * sizeof (indices[0]));
 }
 
 
