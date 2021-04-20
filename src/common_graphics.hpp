@@ -4,7 +4,14 @@
 #include <Windows.h>
 #include <memory>
 
-#include "vk_objects.hpp"
+#include "vk_objects/vk_instance.hpp"
+#include "vk_objects/vk_surface.hpp"
+#include "vk_objects/vk_graphics_device.hpp"
+#include "vk_objects/vk_physical_device.hpp"
+#include "vk_objects/vk_swapchain.hpp"
+#include "vk_objects/vk_sampler.hpp"
+#include "vk_objects/vk_command_pool.hpp"
+#include "vk_objects/vk_image_view.hpp"
 
 class common_graphics
 {

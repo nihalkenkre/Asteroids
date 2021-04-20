@@ -4,6 +4,13 @@
 #include "common_graphics.hpp"
 #include "utils.hpp"
 
+#include "vk_objects/vk_buffer.hpp"
+#include "vk_objects/vk_device_memory.hpp"
+#include "vk_objects/vk_image.hpp"
+#include "vk_objects/vk_image_view.hpp"
+#include "vk_objects/vk_graphics_pipeline_layout.hpp"
+#include "vk_objects/vk_shader_module.hpp"
+
 class scene_graphics
 {
 public:
