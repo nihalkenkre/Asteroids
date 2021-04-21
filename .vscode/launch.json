@@ -8,7 +8,7 @@
             "name": "Debug Launch",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build32/vscode/debug/Asteroids.exe",
+            "program": "${workspaceFolder}/build64/vscode/debug/Asteroids.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

@@ -13,7 +13,7 @@ vk_shader_module::vk_shader_module (
         VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
 		nullptr,
 		0,
-		shader_code.size (),
+		static_cast<uint32_t> (shader_code.size () * sizeof (shader_code[0])),
 		shader_code.data ()
     };
 

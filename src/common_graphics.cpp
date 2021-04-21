@@ -13,19 +13,14 @@ common_graphics::common_graphics (const HINSTANCE& h_instance, const HWND& h_wnd
 
     instance = vk_instance ();
     physical_device = vk_physical_device (instance.instance);
-    std::tie (
-        graphics_queue_family_index, 
-        compute_queue_family_index, 
-        transfer_queue_family_index) = physical_device.get_queue_family_indices ();
-    surface = vk_surface (
-        instance.instance,
-        physical_device.physical_device,
-        h_instance,
-        h_wnd,
-        graphics_queue_family_index
+    std::tie (graphics_queue_family_index, compute_queue_family_index, transfer_queue_family_index) = physical_device.get_queue_family_indices ();
+   
+    surface = vk_surface (instance.instance, physical_device.physical_device,
+                            h_instance, h_wnd, graphics_queue_family_index
     );
 
     get_queue_create_infos_indices ();
+
     graphics_device = vk_graphics_device (
         physical_device.physical_device,
         queue_create_infos
@@ -78,7 +73,7 @@ void common_graphics::get_queue_create_infos_indices ()
             queue_priorities.data ()
         };
 
-        queue_create_infos.emplace_back (queue_create_info);
+        queue_create_infos.push_back (queue_create_info);
     }
 }
 
@@ -134,7 +129,7 @@ void common_graphics::create_swapchain_image_views ()
         swapchain_image_views.emplace_back (
             vk_image_view (
                 graphics_device.graphics_device, i,
-                VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM,
+                VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_B8G8R8A8_UNORM,
                 component_mapping, subresource_range
             )
         );
