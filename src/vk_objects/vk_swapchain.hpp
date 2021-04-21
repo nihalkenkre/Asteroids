@@ -22,8 +22,6 @@ public:
     ~vk_swapchain () noexcept;
 
     VkSwapchainKHR swapchain;
-    std::vector<VkImage> images;
-    std::vector<vk_image_view> image_views;
 
 private:
     VkDevice device;

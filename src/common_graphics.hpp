@@ -42,6 +42,7 @@ public:
 private:
 	void get_queue_create_infos_indices ();
 	void get_device_queues ();
+	void create_swapchain_image_views ();
 
 	std::vector<VkDeviceQueueCreateInfo> queue_create_infos;
 };

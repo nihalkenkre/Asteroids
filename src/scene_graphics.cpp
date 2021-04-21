@@ -16,6 +16,8 @@ scene_graphics::scene_graphics (const common_graphics* common_graphics_obj) : co
     create_descriptor_sets ();
     create_graphics_pipeline_set_layout ();
     create_swapchain_render_pass ();
+    create_swapchain_framebuffers ();
+    create_graphics_pipeline ();
 }
 
 
@@ -239,45 +241,46 @@ void scene_graphics::create_image_buffers ()
         common_graphics_obj->transfer_queue
     );
 
+    VkImageSubresourceRange subresource_range = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+    VkComponentMapping component_mapping = { 
+        VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, 
+        VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY 
+    };
+
     background_image_view = vk_image_view (
         common_graphics_obj->graphics_device.graphics_device,
         background_image.vk_img,
         VK_IMAGE_VIEW_TYPE_2D,
-        VK_FORMAT_R8G8B8A8_UNORM
+        VK_FORMAT_R8G8B8A8_UNORM,
+        component_mapping,
+        subresource_range
     );
 
     player_image_view = vk_image_view (
         common_graphics_obj->graphics_device.graphics_device,
         player_image.vk_img,
         VK_IMAGE_VIEW_TYPE_2D,
-        VK_FORMAT_R8G8B8A8_UNORM
+        VK_FORMAT_R8G8B8A8_UNORM,
+        component_mapping,
+        subresource_range
     );
 
     asteroid_image_view = vk_image_view (
         common_graphics_obj->graphics_device.graphics_device,
         asteroid_image.vk_img,
         VK_IMAGE_VIEW_TYPE_2D,
-        VK_FORMAT_R8G8B8A8_UNORM
+        VK_FORMAT_R8G8B8A8_UNORM,
+        component_mapping,
+        subresource_range
     );
 
     bullet_image_view = vk_image_view (
         common_graphics_obj->graphics_device.graphics_device,
         bullet_image.vk_img,
         VK_IMAGE_VIEW_TYPE_2D,
-        VK_FORMAT_R8G8B8A8_UNORM
-    );
-}
-
-void scene_graphics::create_graphics_pipeline ()
-{
-    vertex_shader_module = vk_shader_module (
-        common_graphics_obj->graphics_device.graphics_device,
-        std::vector<uint32_t> {std::begin (actor_vert), std::end (actor_vert)}
-    );
-
-    fragment_shader_module = vk_shader_module (
-        common_graphics_obj->graphics_device.graphics_device,
-        std::vector<uint32_t> {std::begin (actor_frag), std::end (actor_frag)}
+        VK_FORMAT_R8G8B8A8_UNORM,
+        component_mapping,
+        subresource_range
     );
 }
 
@@ -437,5 +440,44 @@ void scene_graphics::create_swapchain_render_pass ()
         std::vector<VkAttachmentDescription> {color_attachment_description},
         std::vector<VkAttachmentReference> {color_attachment_reference},
         std::vector<VkSubpassDescription> {color_subpass_description}
+    );
+}
+
+
+void scene_graphics::create_swapchain_framebuffers ()
+{
+    framebuffers.reserve (common_graphics_obj->swapchain_image_views.size ());
+
+    for (const auto& iv : common_graphics_obj->swapchain_image_views)
+    {
+        framebuffers.emplace_back (
+            vk_framebuffer (
+                common_graphics_obj->graphics_device.graphics_device,
+                render_pass.render_pass,
+                common_graphics_obj->surface.capabilities.currentExtent,
+                iv.image_view
+            )
+        );
+    }
+}
+
+void scene_graphics::create_graphics_pipeline ()
+{
+    vertex_shader_module = vk_shader_module (
+        common_graphics_obj->graphics_device.graphics_device,
+        std::vector<uint32_t> {std::begin (actor_vert), std::end (actor_vert)}
+    );
+
+    fragment_shader_module = vk_shader_module (
+        common_graphics_obj->graphics_device.graphics_device,
+        std::vector<uint32_t> {std::begin (actor_frag), std::end (actor_frag)}
+    );
+
+    graphics_pipeline = vk_graphics_pipeline (
+        common_graphics_obj->graphics_device.graphics_device,
+        std::vector<VkShaderModule> {vertex_shader_module.shader_module, fragment_shader_module.shader_module},
+        graphics_pipeline_layout.graphics_pipeline_layout,
+        render_pass.render_pass,
+        common_graphics_obj->surface.capabilities.currentExtent
     );
 }

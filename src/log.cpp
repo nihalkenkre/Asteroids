@@ -49,6 +49,10 @@ AGE_RESULT log_error (const AGE_RESULT result)
 		printf ("Graphics Error: Create swapchain\n");
 		break;
 
+	case AGE_RESULT::ERROR_GRAPHICS_GET_SWAPCHAIN_IMAGES:
+		printf ("Graphics Error: Get swapchain images\n");
+		break;
+
 	case AGE_RESULT::ERROR_GRAPHICS_CREATE_IMAGE_VIEW:
 		printf ("Graphics Error: Create Image View\n");
 		break;

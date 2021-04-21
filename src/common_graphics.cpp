@@ -1,5 +1,7 @@
 #include "common_graphics.hpp"
 
+#include "error.hpp"
+
 #include <cstdio>
 #include <tuple>
 #include <map>
@@ -29,6 +31,9 @@ common_graphics::common_graphics (const HINSTANCE& h_instance, const HWND& h_wnd
         queue_create_infos
     );
     swapchain = vk_swapchain (graphics_device.graphics_device, surface);
+
+    create_swapchain_image_views ();
+
     transfer_command_pool = vk_command_pool (
         graphics_device.graphics_device,
         transfer_queue_family_index,
@@ -91,4 +96,47 @@ void common_graphics::get_device_queues ()
 	vkGetDeviceQueue (graphics_device.graphics_device, graphics_queue_family_index, graphics_queue_index, &graphics_queue);
 	vkGetDeviceQueue (graphics_device.graphics_device, compute_queue_family_index, compute_queue_index, &compute_queue);
 	vkGetDeviceQueue (graphics_device.graphics_device, transfer_queue_family_index, transfer_queue_index, &transfer_queue);
+}
+
+void common_graphics::create_swapchain_image_views ()
+{
+    uint32_t image_count = 0;
+    VkResult result = vkGetSwapchainImagesKHR (
+        graphics_device.graphics_device, swapchain.swapchain, 
+        &image_count, nullptr);
+
+    if (result != VK_SUCCESS)
+    {
+        throw AGE_RESULT::ERROR_GRAPHICS_GET_SWAPCHAIN_IMAGES;
+    }
+
+    swapchain_images.resize (image_count);
+
+    result = vkGetSwapchainImagesKHR (
+        graphics_device.graphics_device, swapchain.swapchain,
+        &image_count, swapchain_images.data ());
+
+    if (result != VK_SUCCESS)
+    {
+        throw AGE_RESULT::ERROR_GRAPHICS_GET_SWAPCHAIN_IMAGES;
+    }
+
+    swapchain_image_views.reserve (image_count);
+
+    VkImageSubresourceRange subresource_range = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+    VkComponentMapping component_mapping = { 
+        VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, 
+        VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY 
+    };
+
+    for (const auto& i : swapchain_images)
+    {
+        swapchain_image_views.emplace_back (
+            vk_image_view (
+                graphics_device.graphics_device, i,
+                VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM,
+                component_mapping, subresource_range
+            )
+        );
+    }
 }

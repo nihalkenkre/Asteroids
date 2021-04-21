@@ -7,17 +7,12 @@
 
 vk_image_view::vk_image_view (
     const VkDevice& device, const VkImage& image,
-    const VkImageViewType& type, const VkFormat& format) : device (device)
+    const VkImageViewType& type,
+    const VkFormat& format,
+    const VkComponentMapping& component_mapping,
+    const VkImageSubresourceRange& subresource_range) : device (device)
 {
     printf ("vk_image_view::vk_image_view\n");
-
-    VkImageSubresourceRange subresource_range = {
-        VK_IMAGE_ASPECT_COLOR_BIT,
-        0,
-        1,
-        0,
-        1
-    };
 
     VkImageViewCreateInfo create_info = {
         VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
@@ -26,7 +21,7 @@ vk_image_view::vk_image_view (
         image,
         type,
         format,
-        {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY},
+        component_mapping,
         subresource_range
     };
 

@@ -10,7 +10,10 @@ public:
     vk_image_view () : image_view (VK_NULL_HANDLE), device (VK_NULL_HANDLE) {}
     vk_image_view (
         const VkDevice& device, const VkImage& image,
-        const VkImageViewType& type, const VkFormat& format
+        const VkImageViewType& type,
+        const VkFormat& format,
+        const VkComponentMapping& component_mapping,
+        const VkImageSubresourceRange& subresource_range
     );
 
     vk_image_view (const vk_image_view& other) = delete;

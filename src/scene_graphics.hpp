@@ -13,7 +13,9 @@
 #include "vk_objects/vk_descriptor_sets.hpp"
 #include "vk_objects/vk_graphics_pipeline_layout.hpp"
 #include "vk_objects/vk_render_pass.hpp"
+#include "vk_objects/vk_framebuffer.hpp"
 #include "vk_objects/vk_shader_module.hpp"
+#include "vk_objects/vk_graphics_pipeline.hpp"
 
 class scene_graphics
 {
@@ -34,6 +36,7 @@ private:
     void create_descriptor_sets ();
     void create_graphics_pipeline_set_layout ();
     void create_swapchain_render_pass ();
+    void create_swapchain_framebuffers ();
 
     const common_graphics* common_graphics_obj;
 
@@ -64,9 +67,12 @@ private:
     vk_descriptor_set texture_descriptor_set;
 
     vk_render_pass render_pass;
+    std::vector<vk_framebuffer> framebuffers;
 
     vk_shader_module vertex_shader_module;
     vk_shader_module fragment_shader_module;
+
+    vk_graphics_pipeline graphics_pipeline;
 };
 
 #endif
