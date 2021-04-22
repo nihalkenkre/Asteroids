@@ -20,7 +20,6 @@ scene_graphics::scene_graphics (const common_graphics* common_graphics_obj) : co
     create_graphics_pipeline ();
 }
 
-
 void scene_graphics::create_geometry_buffers ()
 {
     VkDeviceSize data_size = scene_mesh.positions_size + scene_mesh.uvs_size + scene_mesh.indices_size;
@@ -139,6 +138,8 @@ void scene_graphics::create_image_buffers ()
         VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
         VK_PIPELINE_STAGE_TRANSFER_BIT,
         common_graphics_obj->transfer_command_pool.command_pool,
+        common_graphics_obj->transfer_queue,
+        common_graphics_obj->transfer_command_pool.command_pool,
         common_graphics_obj->transfer_queue
     );
 
@@ -151,6 +152,8 @@ void scene_graphics::create_image_buffers ()
         common_graphics_obj->transfer_queue_family_index,
         VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
         VK_PIPELINE_STAGE_TRANSFER_BIT,
+        common_graphics_obj->transfer_command_pool.command_pool,
+        common_graphics_obj->transfer_queue,
         common_graphics_obj->transfer_command_pool.command_pool,
         common_graphics_obj->transfer_queue
     );
@@ -165,6 +168,8 @@ void scene_graphics::create_image_buffers ()
         VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
         VK_PIPELINE_STAGE_TRANSFER_BIT,
         common_graphics_obj->transfer_command_pool.command_pool,
+        common_graphics_obj->transfer_queue,
+        common_graphics_obj->transfer_command_pool.command_pool,
         common_graphics_obj->transfer_queue
     );
 
@@ -177,6 +182,8 @@ void scene_graphics::create_image_buffers ()
         common_graphics_obj->transfer_queue_family_index,
         VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
         VK_PIPELINE_STAGE_TRANSFER_BIT,
+        common_graphics_obj->transfer_command_pool.command_pool,
+        common_graphics_obj->transfer_queue,
         common_graphics_obj->transfer_command_pool.command_pool,
         common_graphics_obj->transfer_queue
     );
@@ -198,6 +205,8 @@ void scene_graphics::create_image_buffers ()
         common_graphics_obj->graphics_queue_family_index,
         VK_PIPELINE_STAGE_TRANSFER_BIT,
         VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+        common_graphics_obj->transfer_command_pool.command_pool,
+        common_graphics_obj->transfer_queue,
         common_graphics_obj->graphics_command_pool.command_pool,
         common_graphics_obj->graphics_queue
     );
@@ -211,6 +220,8 @@ void scene_graphics::create_image_buffers ()
         common_graphics_obj->graphics_queue_family_index,
         VK_PIPELINE_STAGE_TRANSFER_BIT,
         VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+        common_graphics_obj->transfer_command_pool.command_pool,
+        common_graphics_obj->transfer_queue,
         common_graphics_obj->graphics_command_pool.command_pool,
         common_graphics_obj->graphics_queue
     );
@@ -224,6 +235,8 @@ void scene_graphics::create_image_buffers ()
         common_graphics_obj->graphics_queue_family_index,
         VK_PIPELINE_STAGE_TRANSFER_BIT,
         VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+        common_graphics_obj->transfer_command_pool.command_pool,
+        common_graphics_obj->transfer_queue,
         common_graphics_obj->graphics_command_pool.command_pool,
         common_graphics_obj->graphics_queue
     );
@@ -237,6 +250,8 @@ void scene_graphics::create_image_buffers ()
         common_graphics_obj->graphics_queue_family_index,
         VK_PIPELINE_STAGE_TRANSFER_BIT,
         VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+        common_graphics_obj->transfer_command_pool.command_pool,
+        common_graphics_obj->transfer_queue,
         common_graphics_obj->graphics_command_pool.command_pool,
         common_graphics_obj->graphics_queue
     );

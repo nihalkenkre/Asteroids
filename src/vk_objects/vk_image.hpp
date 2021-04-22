@@ -29,8 +29,10 @@ public:
         const uint32_t& dst_queue_family_index,
         const VkPipelineStageFlags& src_pipeline_stage,
         const VkPipelineStageFlags& dst_pipeline_stage, 
-        const VkCommandPool& command_pool,
-        const VkQueue& queue
+        const VkCommandPool& src_command_pool,
+        const VkQueue& src_queue,
+        const VkCommandPool& dst_command_pool,
+        const VkQueue& dst_queue
     ) const;
 
 private:
