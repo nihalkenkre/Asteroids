@@ -3,6 +3,7 @@
 
 #include <vulkan/vulkan.h>
 #include <vector>
+#include <string>
 
 class vk_graphics_pipeline
 {
@@ -11,6 +12,8 @@ public:
     vk_graphics_pipeline (
         const VkDevice& device,
         const std::vector<VkShaderModule>& shader_modules,
+        const std::vector<std::string>& main_functions,
+        const std::vector<VkShaderStageFlagBits>& stage_flags,
         const VkPipelineLayout& graphics_pipeline_layout,
         const VkRenderPass& render_pass,
         const VkExtent2D& extent

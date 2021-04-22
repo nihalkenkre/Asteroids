@@ -25,6 +25,7 @@ public:
 	vk_swapchain swapchain;
 	vk_sampler common_sampler;
 	vk_command_pool transfer_command_pool;
+	vk_command_pool graphics_command_pool;
 
 	std::vector<VkImage> swapchain_images;
 	std::vector<vk_image_view> swapchain_image_views;

@@ -195,11 +195,11 @@ void scene_graphics::create_image_buffers ()
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
         common_graphics_obj->transfer_queue_family_index,
-        common_graphics_obj->transfer_queue_family_index,
-        VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+        common_graphics_obj->graphics_queue_family_index,
         VK_PIPELINE_STAGE_TRANSFER_BIT,
-        common_graphics_obj->transfer_command_pool.command_pool,
-        common_graphics_obj->transfer_queue
+        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+        common_graphics_obj->graphics_command_pool.command_pool,
+        common_graphics_obj->graphics_queue
     );
 
     player_image.change_layout (
@@ -208,11 +208,11 @@ void scene_graphics::create_image_buffers ()
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
         common_graphics_obj->transfer_queue_family_index,
-        common_graphics_obj->transfer_queue_family_index,
-        VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+        common_graphics_obj->graphics_queue_family_index,
         VK_PIPELINE_STAGE_TRANSFER_BIT,
-        common_graphics_obj->transfer_command_pool.command_pool,
-        common_graphics_obj->transfer_queue
+        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+        common_graphics_obj->graphics_command_pool.command_pool,
+        common_graphics_obj->graphics_queue
     );
 
     asteroid_image.change_layout (
@@ -221,11 +221,11 @@ void scene_graphics::create_image_buffers ()
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
         common_graphics_obj->transfer_queue_family_index,
-        common_graphics_obj->transfer_queue_family_index,
-        VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+        common_graphics_obj->graphics_queue_family_index,
         VK_PIPELINE_STAGE_TRANSFER_BIT,
-        common_graphics_obj->transfer_command_pool.command_pool,
-        common_graphics_obj->transfer_queue
+        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+        common_graphics_obj->graphics_command_pool.command_pool,
+        common_graphics_obj->graphics_queue
     );
 
     bullet_image.change_layout (
@@ -234,11 +234,11 @@ void scene_graphics::create_image_buffers ()
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
         common_graphics_obj->transfer_queue_family_index,
-        common_graphics_obj->transfer_queue_family_index,
-        VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+        common_graphics_obj->graphics_queue_family_index,
         VK_PIPELINE_STAGE_TRANSFER_BIT,
-        common_graphics_obj->transfer_command_pool.command_pool,
-        common_graphics_obj->transfer_queue
+        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+        common_graphics_obj->graphics_command_pool.command_pool,
+        common_graphics_obj->graphics_queue
     );
 
     VkImageSubresourceRange subresource_range = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
@@ -476,6 +476,8 @@ void scene_graphics::create_graphics_pipeline ()
     graphics_pipeline = vk_graphics_pipeline (
         common_graphics_obj->graphics_device.graphics_device,
         std::vector<VkShaderModule> {vertex_shader_module.shader_module, fragment_shader_module.shader_module},
+        std::vector<std::string> {"main", "main"},
+        std::vector<VkShaderStageFlagBits> {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_FRAGMENT_BIT},
         graphics_pipeline_layout.graphics_pipeline_layout,
         render_pass.render_pass,
         common_graphics_obj->surface.capabilities.currentExtent

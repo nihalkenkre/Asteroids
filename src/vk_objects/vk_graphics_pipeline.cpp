@@ -9,6 +9,8 @@
 vk_graphics_pipeline::vk_graphics_pipeline (
     const VkDevice& device, 
     const std::vector<VkShaderModule>& shader_modules,
+    const std::vector<std::string>& main_functions,
+    const std::vector<VkShaderStageFlagBits>& stage_flags,
     const VkPipelineLayout& graphics_pipeline_layout,
     const VkRenderPass& render_pass,
     const VkExtent2D& extent) : device (device)
@@ -17,6 +19,8 @@ vk_graphics_pipeline::vk_graphics_pipeline (
 
     std::vector <VkPipelineShaderStageCreateInfo> stage_infos;
     stage_infos.reserve (shader_modules.size ());
+
+    uint32_t index_counter = 0;
     
     for (const auto& sm : shader_modules)
     {
@@ -24,13 +28,14 @@ vk_graphics_pipeline::vk_graphics_pipeline (
             VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
             nullptr,
             0,
-            VK_SHADER_STAGE_VERTEX_BIT,
+            stage_flags[index_counter],
             sm,
-            "main",
+            main_functions[index_counter].c_str (),
             nullptr
         };
         
         stage_infos.emplace_back (stage_info);
+        ++index_counter;
     }
 
     std::array<VkVertexInputBindingDescription, 2> vertex_input_binding_descriptions = {

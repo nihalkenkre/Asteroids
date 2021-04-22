@@ -152,5 +152,11 @@ void vk_buffer::copy_to_images (
 
     vk_queue one_time_submit (device, transfer_queue);
     one_time_submit.submit ({ copy_cmd_buffer.command_buffer });
+
+    VkResult result = vkQueueWaitIdle (transfer_queue);
+    if (result != VK_SUCCESS)
+    {
+        throw AGE_RESULT::ERROR_GRAPHICS_QUEUE_WAIT_IDLE;
+    }
 }
 

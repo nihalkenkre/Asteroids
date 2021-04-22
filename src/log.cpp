@@ -29,8 +29,24 @@ AGE_RESULT log_error (const AGE_RESULT result)
 		printf ("Graphics Error: Create surface\n");
 		break;
 
+	case AGE_RESULT::ERROR_GRAPHICS_SURFACE_CAPABILITIES:
+		printf ("Graphics Error: Surface capabilities\n");
+		break;
+
+	case AGE_RESULT::ERROR_GRAPHICS_SURFACE_FORMATS:
+		printf ("Graphics Error: Surface formats\n");
+		break;
+
+	case AGE_RESULT::ERROR_GRAPHICS_SURFACE_PRESENT_MODES:
+		printf ("Graphics Error: Surface present modes\n");
+		break;
+
 	case AGE_RESULT::ERROR_GRAPHICS_GET_PHYSICAL_DEVICE:
 		printf ("Graphics Error: Get Physical Device\n");
+		break;
+
+	case AGE_RESULT::ERROR_GRAPHICS_ENUMERATE_PHYSICAL_DEVICES:
+		printf ("Graphics Error: Enumerate physical devices\n");
 		break;
 
 	case AGE_RESULT::ERROR_GRAPHICS_POPULATE_DEVICE_LAYERS_AND_EXTENSIONS:
@@ -151,6 +167,10 @@ AGE_RESULT log_error (const AGE_RESULT result)
 
 	case AGE_RESULT::ERROR_GRAPHICS_RESET_FENCES:
 		printf ("Graphics Error: Reset Fence\n");
+		break;
+
+	case AGE_RESULT::ERROR_GRAPHICS_QUEUE_WAIT_IDLE:
+		printf ("Graphics Error: Queue Wait Idle\n");
 		break;
 
 	case AGE_RESULT::ERROR_GRAPHICS_QUEUE_SUBMIT:

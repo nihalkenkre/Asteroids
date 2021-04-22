@@ -29,11 +29,9 @@ common_graphics::common_graphics (const HINSTANCE& h_instance, const HWND& h_wnd
 
     create_swapchain_image_views ();
 
-    transfer_command_pool = vk_command_pool (
-        graphics_device.graphics_device,
-        transfer_queue_family_index,
-        VK_COMMAND_POOL_CREATE_TRANSIENT_BIT
-    );
+    transfer_command_pool = vk_command_pool (graphics_device.graphics_device, transfer_queue_family_index, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT);
+    graphics_command_pool = vk_command_pool (graphics_device.graphics_device, graphics_queue_family_index, VK_COMMAND_POOL_CREATE_TRANSIENT_BIT);
+
     get_device_queues ();
     common_sampler = vk_sampler (graphics_device.graphics_device);
 }
