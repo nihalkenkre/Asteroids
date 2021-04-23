@@ -16,6 +16,9 @@
 #include "vk_objects/vk_framebuffer.hpp"
 #include "vk_objects/vk_shader_module.hpp"
 #include "vk_objects/vk_graphics_pipeline.hpp"
+#include "vk_objects/vk_command_buffers.hpp"
+#include "vk_objects/vk_semaphore.hpp"
+#include "vk_objects/vk_fence.hpp"
 
 class scene_graphics
 {
@@ -37,6 +40,8 @@ private:
     void create_graphics_pipeline_set_layout ();
     void create_swapchain_render_pass ();
     void create_swapchain_framebuffers ();
+    void create_swapchain_command_buffers ();
+    void create_swapchain_semaphores_fences ();
 
     const common_graphics* common_graphics_obj;
 
@@ -73,6 +78,12 @@ private:
     vk_shader_module fragment_shader_module;
 
     vk_graphics_pipeline graphics_pipeline;
+
+    vk_command_buffers swapchain_command_buffers;
+
+    vk_semaphore swapchain_wait_semaphore;
+    std::vector<vk_semaphore> swapchain_signal_semaphores;
+    std::vector<vk_fence> swapchain_fences;
 };
 
 #endif

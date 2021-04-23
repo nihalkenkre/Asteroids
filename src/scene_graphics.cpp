@@ -13,11 +13,13 @@ scene_graphics::scene_graphics (const common_graphics* common_graphics_obj) : co
 
     create_geometry_buffers ();
     create_image_buffers ();
-    /*create_descriptor_sets ();
+    create_descriptor_sets ();
     create_graphics_pipeline_set_layout ();
     create_swapchain_render_pass ();
     create_swapchain_framebuffers ();
-    create_graphics_pipeline ();*/
+    create_graphics_pipeline ();
+    create_swapchain_command_buffers ();
+    create_swapchain_semaphores_fences ();
 }
 
 void scene_graphics::create_geometry_buffers ()
@@ -203,7 +205,7 @@ void scene_graphics::create_image_buffers ()
         common_graphics_obj->graphics_queue
     );
 
-    /*player_image.change_layout (
+    player_image.change_layout (
         VK_ACCESS_TRANSFER_WRITE_BIT,
         VK_ACCESS_SHADER_READ_BIT,
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -288,7 +290,7 @@ void scene_graphics::create_image_buffers ()
         VK_FORMAT_R8G8B8A8_UNORM,
         component_mapping,
         subresource_range
-    );*/
+    );
 }
 
 void scene_graphics::create_descriptor_sets ()
@@ -488,4 +490,39 @@ void scene_graphics::create_graphics_pipeline ()
         render_pass.render_pass,
         common_graphics_obj->surface.capabilities.currentExtent
     );
+}
+
+void scene_graphics::create_swapchain_command_buffers ()
+{
+    swapchain_command_buffers = vk_command_buffers (
+        common_graphics_obj->graphics_device.graphics_device, 
+        common_graphics_obj->graphics_command_pool.command_pool, 
+        static_cast<uint32_t> (common_graphics_obj->swapchain_images.size ())
+    );
+}
+
+void scene_graphics::create_swapchain_semaphores_fences ()
+{
+    swapchain_wait_semaphore = vk_semaphore (common_graphics_obj->graphics_device.graphics_device);
+
+    swapchain_signal_semaphores.reserve (common_graphics_obj->swapchain_images.size ());
+
+    for (uint32_t s = 0; 
+        s < static_cast<uint32_t> (common_graphics_obj->swapchain_images.size ());
+        ++s)
+    {
+        swapchain_signal_semaphores.emplace_back (
+            vk_semaphore (common_graphics_obj->graphics_device.graphics_device)
+        );
+    }
+
+    swapchain_fences.reserve (common_graphics_obj->swapchain_images.size ());
+    for (uint32_t f = 0;
+        f < static_cast<uint32_t> (common_graphics_obj->swapchain_images.size ());
+        ++f)
+    {
+        swapchain_fences.emplace_back (
+            vk_fence (common_graphics_obj->graphics_device.graphics_device)
+        );
+    }
 }

@@ -104,12 +104,6 @@ vk_command_buffers::vk_command_buffers (
     {
         command_buffers.emplace_back (vk_command_buffer (device, command_pool));
     }
-
-    /*VkResult result = vkAllocateCommandBuffers (device, &allocate_info, command_buffers.data ());
-    if (result != VK_SUCCESS)
-    {
-        throw AGE_RESULT::ERROR_GRAPHICS_ALLOCATE_COMMAND_BUFFERS;
-    }*/
 }
 
 vk_command_buffers::vk_command_buffers (vk_command_buffers&& other) noexcept
@@ -137,54 +131,22 @@ vk_command_buffers::~vk_command_buffers () noexcept
 {
     printf ("vk_command_buffers::~vk_command_buffers\n");
 
-    /*if (command_buffers.size () > 0 && 
-        command_pool != VK_NULL_HANDLE && 
-        device != VK_NULL_HANDLE)
-    {
-        vkFreeCommandBuffers (device, command_pool, static_cast<uint32_t> (command_buffers.size ()), command_buffers.data ());
-    }*/
-
     command_buffers.clear ();
 }
 
 void vk_command_buffers::begin (const VkCommandBufferUsageFlags& flags) const
 {
-    /*VkCommandBufferBeginInfo begin_info = {
-        VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-        nullptr,
-        flags,
-        nullptr
-    };
-
-    VkResult result = VK_SUCCESS;*/
-
     for (const auto& command_buffer : command_buffers)
     {
-        /*result = vkBeginCommandBuffer (command_buffer, &begin_info);
-        if (result != VK_SUCCESS)
-        {
-            throw AGE_RESULT::ERROR_GRAPHICS_BEGIN_COMMAND_BUFFER;
-        }*/
-
         command_buffer.begin (flags);
     }
 }
 
 void vk_command_buffers::end () const
 {
-    /*VkResult result = VK_SUCCESS;
 
-    for (auto command_buffer : command_buffers)
+    for (const auto& command_buffer : command_buffers)
     {
-        result = vkEndCommandBuffer (command_buffer);
-        if (result != VK_SUCCESS)
-        {
-            throw AGE_RESULT::ERROR_GRAPHICS_END_COMMAND_BUFFER;
-        }
-    }*/
-
-    for (const auto& c : command_buffers)
-    {
-        c.end ();
+        command_buffer.end ();
     }
 }
