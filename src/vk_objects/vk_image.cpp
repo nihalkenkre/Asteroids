@@ -66,6 +66,63 @@ vk_image::~vk_image () noexcept
 }
 
 void vk_image::change_layout (
+    const VkAccessFlags& src_access, 
+    const VkAccessFlags& dst_access, 
+    const VkImageLayout& src_layout, 
+    const VkImageLayout& dst_layout, 
+    const uint32_t& src_queue_family_index, 
+    const uint32_t& dst_queue_family_index, 
+    const VkPipelineStageFlags& src_pipeline_stage, 
+    const VkPipelineStageFlags& dst_pipeline_stage, 
+    const VkCommandPool& command_pool, 
+    const VkQueue& queue) const
+{
+    VkImageSubresourceRange subresource_range = {
+        VK_IMAGE_ASPECT_COLOR_BIT,
+        0,
+        1,
+        0,
+        1
+    };
+
+    VkImageMemoryBarrier image_memory_barrier = {
+        VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+        nullptr,
+        src_access,
+        dst_access,
+        src_layout,
+        dst_layout,
+        src_queue_family_index,
+        dst_queue_family_index,
+        vk_img,
+        subresource_range
+    };
+
+    vk_command_buffer cmd_buffer (device, command_pool);
+    cmd_buffer.begin (VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+
+    vkCmdPipelineBarrier (
+        cmd_buffer.command_buffer,
+        src_pipeline_stage,
+        dst_pipeline_stage,
+        0,
+        0,
+        nullptr,
+        0,
+        nullptr,
+        1,
+        &image_memory_barrier
+    );
+
+    cmd_buffer.end ();
+
+    vk_queue submit_queue (device, queue);
+    submit_queue.submit (std::vector<VkCommandBuffer>{ cmd_buffer.command_buffer });
+
+    vkQueueWaitIdle (queue);
+}
+
+void vk_image::change_layout (
     const VkAccessFlags& src_access,
     const VkAccessFlags& dst_access,
     const VkImageLayout& src_layout,
@@ -136,9 +193,11 @@ void vk_image::change_layout (
 
     dst_cmd_buffer.end ();
 
+    vk_semaphore sem (device);
+
     vk_queue src_submit_queue (device, src_queue);
-    src_submit_queue.submit ({}, 0, std::vector<VkCommandBuffer>{ src_cmd_buffer.command_buffer }, {});
+    src_submit_queue.submit ({}, 0, std::vector<VkCommandBuffer>{ src_cmd_buffer.command_buffer }, { sem.semaphore });
     
     vk_queue dst_submit_queue (device, dst_queue);
-    dst_submit_queue.submit ({}, 0, std::vector<VkCommandBuffer>{ src_cmd_buffer.command_buffer }, {});
+    dst_submit_queue.submit ({ sem.semaphore }, dst_pipeline_stage, std::vector<VkCommandBuffer>{ dst_cmd_buffer.command_buffer }, {});
 }

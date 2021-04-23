@@ -19,6 +19,19 @@ public:
     ~vk_image () noexcept;
 
     VkImage vk_img;
+    
+    void change_layout (
+        const VkAccessFlags& src_access,
+        const VkAccessFlags& dst_access,
+        const VkImageLayout& src_layout,
+        const VkImageLayout& dst_layout,
+        const uint32_t& src_queue_family_index,
+        const uint32_t& dst_queue_family_index,
+        const VkPipelineStageFlags& src_pipeline_stage,
+        const VkPipelineStageFlags& dst_pipeline_stage,
+        const VkCommandPool& command_pool,
+        const VkQueue& queue
+    ) const;
 
     void change_layout (
         const VkAccessFlags& src_access,

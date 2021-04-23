@@ -13,11 +13,11 @@ scene_graphics::scene_graphics (const common_graphics* common_graphics_obj) : co
 
     create_geometry_buffers ();
     create_image_buffers ();
-    create_descriptor_sets ();
+    /*create_descriptor_sets ();
     create_graphics_pipeline_set_layout ();
     create_swapchain_render_pass ();
     create_swapchain_framebuffers ();
-    create_graphics_pipeline ();
+    create_graphics_pipeline ();*/
 }
 
 void scene_graphics::create_geometry_buffers ()
@@ -138,8 +138,6 @@ void scene_graphics::create_image_buffers ()
         VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
         VK_PIPELINE_STAGE_TRANSFER_BIT,
         common_graphics_obj->transfer_command_pool.command_pool,
-        common_graphics_obj->transfer_queue,
-        common_graphics_obj->transfer_command_pool.command_pool,
         common_graphics_obj->transfer_queue
     );
 
@@ -152,8 +150,6 @@ void scene_graphics::create_image_buffers ()
         common_graphics_obj->transfer_queue_family_index,
         VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
         VK_PIPELINE_STAGE_TRANSFER_BIT,
-        common_graphics_obj->transfer_command_pool.command_pool,
-        common_graphics_obj->transfer_queue,
         common_graphics_obj->transfer_command_pool.command_pool,
         common_graphics_obj->transfer_queue
     );
@@ -168,8 +164,6 @@ void scene_graphics::create_image_buffers ()
         VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
         VK_PIPELINE_STAGE_TRANSFER_BIT,
         common_graphics_obj->transfer_command_pool.command_pool,
-        common_graphics_obj->transfer_queue,
-        common_graphics_obj->transfer_command_pool.command_pool,
         common_graphics_obj->transfer_queue
     );
 
@@ -182,8 +176,6 @@ void scene_graphics::create_image_buffers ()
         common_graphics_obj->transfer_queue_family_index,
         VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
         VK_PIPELINE_STAGE_TRANSFER_BIT,
-        common_graphics_obj->transfer_command_pool.command_pool,
-        common_graphics_obj->transfer_queue,
         common_graphics_obj->transfer_command_pool.command_pool,
         common_graphics_obj->transfer_queue
     );
@@ -211,7 +203,7 @@ void scene_graphics::create_image_buffers ()
         common_graphics_obj->graphics_queue
     );
 
-    player_image.change_layout (
+    /*player_image.change_layout (
         VK_ACCESS_TRANSFER_WRITE_BIT,
         VK_ACCESS_SHADER_READ_BIT,
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -296,7 +288,7 @@ void scene_graphics::create_image_buffers ()
         VK_FORMAT_R8G8B8A8_UNORM,
         component_mapping,
         subresource_range
-    );
+    );*/
 }
 
 void scene_graphics::create_descriptor_sets ()
@@ -378,7 +370,6 @@ void scene_graphics::create_descriptor_sets ()
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
         }
     };
-
 
     VkWriteDescriptorSet texture_descriptor_set_write{
         VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,

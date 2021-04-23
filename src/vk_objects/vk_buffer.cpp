@@ -97,7 +97,7 @@ void vk_buffer::copy_to_buffer (
     copy_cmd_buffer.end ();
 
     vk_queue queue (device, transfer_queue);
-    queue.submit ({}, 0, std::vector<VkCommandBuffer> {copy_cmd_buffer.command_buffer}, {});
+    queue.submit (std::vector<VkCommandBuffer> {copy_cmd_buffer.command_buffer});
     vkQueueWaitIdle (queue.queue);
 }
 
@@ -151,7 +151,7 @@ void vk_buffer::copy_to_images (
     copy_cmd_buffer.end ();
 
     vk_queue one_time_submit (device, transfer_queue);
-    one_time_submit.submit ({}, 0, { copy_cmd_buffer.command_buffer }, {});
+    one_time_submit.submit ({ copy_cmd_buffer.command_buffer });
 
     VkResult result = vkQueueWaitIdle (transfer_queue);
     if (result != VK_SUCCESS)
