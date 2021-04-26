@@ -61,17 +61,26 @@ void common_graphics::get_queue_create_infos_indices ()
 
     for (const auto& family_index_queue_count : family_indices_queue_count)
     {
-        std::vector<float> queue_priorities (family_index_queue_count.second, 1);
+        std::vector<float> priorities (family_index_queue_count.second, 1);
+        queue_priorities.push_back (priorities);
+
         VkDeviceQueueCreateInfo queue_create_info = {
             VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
             nullptr,
             0,
             family_index_queue_count.first,
             family_index_queue_count.second,
-            queue_priorities.data ()
+            nullptr
         };
-
         queue_create_infos.push_back (queue_create_info);
+    }
+
+    uint32_t index_counter = 0;
+
+    for (auto &q_c_i : queue_create_infos)
+    {
+        q_c_i.pQueuePriorities = queue_priorities[index_counter].data ();
+        ++index_counter;
     }
 }
 

@@ -46,6 +46,7 @@ private:
 	void create_swapchain_image_views ();
 
 	std::vector<VkDeviceQueueCreateInfo> queue_create_infos;
+	std::vector<std::vector<float>> queue_priorities;
 };
 
 #endif
