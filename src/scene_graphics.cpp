@@ -526,3 +526,8 @@ void scene_graphics::create_swapchain_semaphores_fences ()
         );
     }
 }
+
+void scene_graphics::create_transforms_buffer (const uint32_t large_asteroids_current_max_count, const uint32_t small_asteroids_current_max_count, const uint32_t bullet_current_max_count)
+{
+
+}

@@ -92,36 +92,37 @@ game_class::game_class (const HINSTANCE& h_instance, const HWND& h_wnd)
     printf ("game_class::game_class\n");
 
     common_graphics_obj = std::make_unique<common_graphics> (h_instance, h_wnd);
-    scene_obj = std::make_unique<scene> (common_graphics_obj.get ());
+    scene_obj = scene (common_graphics_obj.get ());
 }
 
 void game_class::process_key_down (const WPARAM w_param)
 {
+    scene_obj.process_key_down (w_param);
 }
 
 void game_class::process_key_up (const WPARAM w_param)
 {
-
+    scene_obj.process_key_up (w_param);
 }
 
 void game_class::process_left_mouse_click (const int32_t x, const int32_t y)
 {
-
+    scene_obj.process_left_mouse_click (x, y);
 }
 
 void game_class::process_right_mouse_click (const int32_t x, const int32_t y)
 {
-
+    scene_obj.process_right_mouse_click (x, y);
 }
 
-void game_class::update (uint32_t delta_time)
+void game_class::update (uint32_t delta_msecs)
 {
-
+    scene_obj.update (delta_msecs);
 }
 
 void game_class::submit_present ()
 {
-
+    scene_obj.submit_present ();
 }
 
 struct game_

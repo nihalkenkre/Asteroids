@@ -40,12 +40,12 @@ public:
     void process_key_down (const WPARAM w_param);
     void process_key_up (const WPARAM w_param);
 
-    void update (uint32_t delta_time);
+    void update (uint32_t delta_msecs);
     void submit_present ();
 
 private:
     std::unique_ptr<common_graphics> common_graphics_obj;
-    std::unique_ptr<scene> scene_obj;
+    scene scene_obj;
 };
 
 #endif

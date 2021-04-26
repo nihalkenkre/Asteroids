@@ -23,13 +23,9 @@
 class scene_graphics
 {
 public:
+    scene_graphics () {}
     scene_graphics (const common_graphics* common_graphics_obj);
-    
-    scene_graphics (const scene_graphics& other) = delete;
-    scene_graphics& operator= (const scene_graphics& other) = delete;
 
-    scene_graphics (scene_graphics&& other) = delete;
-    scene_graphics& operator= (scene_graphics&& other) = delete;
 
 private:
 
@@ -42,6 +38,11 @@ private:
     void create_swapchain_framebuffers ();
     void create_swapchain_command_buffers ();
     void create_swapchain_semaphores_fences ();
+    void create_transforms_buffer (
+        const uint32_t large_asteroids_current_max_count,
+        const uint32_t small_asteroids_current_max_count,
+        const uint32_t bullet_current_max_count
+    );
 
     const common_graphics* common_graphics_obj;
 
@@ -84,6 +85,9 @@ private:
     vk_semaphore swapchain_wait_semaphore;
     std::vector<vk_semaphore> swapchain_signal_semaphores;
     std::vector<vk_fence> swapchain_fences;
+
+    vk_buffer transform_buffer;
+    vk_device_memory transform_buffer_memory;
 };
 
 #endif
