@@ -6,10 +6,8 @@
 #include <vector>
 
 vk_surface::vk_surface (const VkInstance& instance, 
-                        const VkPhysicalDevice& physical_device,
                         const HINSTANCE& h_instance,
-                        const HWND& h_wnd,
-                        const uint32_t& graphics_queue_family_index) : instance (instance)
+                        const HWND& h_wnd) : instance (instance)
 {
     printf ("vk_surface::vk_surface\n");
 
@@ -26,9 +24,46 @@ vk_surface::vk_surface (const VkInstance& instance,
     {
         throw AGE_RESULT::ERROR_GRAPHICS_CREATE_SURFACE;
     }
-    
+}
+
+vk_surface::vk_surface (vk_surface&& other) noexcept
+{
+    printf ("vk_surface move ctor\n");
+
+    *this = std::move (other);
+}
+
+vk_surface& vk_surface::operator= (vk_surface&& other) noexcept
+{
+    printf ("vk_surface move assignment\n");
+
+    present_mode = other.present_mode;
+    capabilities = other.capabilities;
+    format = other.format;
+
+    surface = other.surface;
+    instance = other.instance;
+
+    other.surface = VK_NULL_HANDLE;
+    other.instance = VK_NULL_HANDLE;
+
+    return *this;
+}
+
+vk_surface::~vk_surface () noexcept
+{
+    printf ("vk_surface::~vk_surface\n");
+
+    if (surface != VK_NULL_HANDLE && instance != VK_NULL_HANDLE)
+    {
+        vkDestroySurfaceKHR (instance, surface, nullptr);
+    }
+}
+
+void vk_surface::get_surface_details (const VkPhysicalDevice& physical_device, const uint32_t& graphics_queue_family_index)
+{
     VkBool32 is_supported = VK_FALSE;
-    result = vkGetPhysicalDeviceSurfaceSupportKHR (physical_device, graphics_queue_family_index, surface, &is_supported);
+    VkResult result = vkGetPhysicalDeviceSurfaceSupportKHR (physical_device, graphics_queue_family_index, surface, &is_supported);
 
     if (result != VK_SUCCESS || !is_supported)
     {
@@ -101,39 +136,5 @@ vk_surface::vk_surface (const VkInstance& instance,
                                                }
                                                );
         present_mode = *present_mode_iter;
-    }
-}
-
-vk_surface::vk_surface (vk_surface&& other) noexcept
-{
-    printf ("vk_surface move ctor\n");
-
-    *this = std::move (other);
-}
-
-vk_surface& vk_surface::operator= (vk_surface&& other) noexcept
-{
-    printf ("vk_surface move assignment\n");
-
-    surface = other.surface;
-    present_mode = other.present_mode;
-    capabilities = other.capabilities;
-    format = other.format;
-
-    instance = other.instance;
-
-    other.surface = VK_NULL_HANDLE;
-    other.instance = VK_NULL_HANDLE;
-
-    return *this;
-}
-
-vk_surface::~vk_surface () noexcept
-{
-    printf ("vk_surface::~vk_surface\n");
-
-    if (surface != VK_NULL_HANDLE && instance != VK_NULL_HANDLE)
-    {
-        vkDestroySurfaceKHR (instance, surface, nullptr);
     }
 }

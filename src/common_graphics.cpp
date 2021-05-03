@@ -15,9 +15,9 @@ common_graphics::common_graphics (const HINSTANCE& h_instance, const HWND& h_wnd
     physical_device = vk_physical_device (instance.instance);
     std::tie (graphics_queue_family_index, compute_queue_family_index, transfer_queue_family_index) = physical_device.get_queue_family_indices ();
    
-    surface = vk_surface (instance.instance, physical_device.physical_device,
-                            h_instance, h_wnd, graphics_queue_family_index
-    );
+    surface = vk_surface (instance.instance, h_instance, h_wnd);
+
+    surface.get_surface_details (physical_device.physical_device, graphics_queue_family_index);
 
     get_queue_create_infos_indices ();
 

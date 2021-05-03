@@ -143,6 +143,7 @@ vk_command_buffers& vk_command_buffers::operator= (vk_command_buffers&& other) n
     command_pool = other.command_pool;
     device = other.device;
 
+    other.command_buffers.clear ();
     other.command_pool = VK_NULL_HANDLE;;
     other.device = VK_NULL_HANDLE;
 

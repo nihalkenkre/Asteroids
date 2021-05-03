@@ -67,9 +67,9 @@ uint32_t vk_graphics_device::acquire_next_swapchain_image_index (
     uint32_t image_index = 0;
 
     VkResult result = vkAcquireNextImageKHR (graphics_device, swapchain, timeout, wait_semaphore, fence, &image_index);
+
     if (result != VK_SUCCESS &&
         result != VK_SUBOPTIMAL_KHR &&
-        result != VK_ERROR_OUT_OF_DATE_KHR &&
         result != VK_TIMEOUT &&
         result != VK_NOT_READY)
     {

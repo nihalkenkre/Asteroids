@@ -43,7 +43,7 @@ vk_graphics_pipeline_layout& vk_graphics_pipeline_layout::operator=(vk_graphics_
     device = other.device;
 
     other.graphics_pipeline_layout = VK_NULL_HANDLE;
-    device = VK_NULL_HANDLE;
+    other.device = VK_NULL_HANDLE;
 
     return *this;
 }

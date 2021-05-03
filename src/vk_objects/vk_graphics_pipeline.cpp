@@ -206,7 +206,7 @@ vk_graphics_pipeline& vk_graphics_pipeline::operator=(vk_graphics_pipeline&& oth
 
 vk_graphics_pipeline::~vk_graphics_pipeline () noexcept
 {
-    printf ("vk_graphics_pipeline::vk_graphics_pipeline\n");
+    printf ("vk_graphics_pipeline::~vk_graphics_pipeline\n");
 
     if (graphics_pipeline != VK_NULL_HANDLE && device != VK_NULL_HANDLE)
     {

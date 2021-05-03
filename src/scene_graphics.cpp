@@ -540,14 +540,16 @@ void scene_graphics::create_transforms_buffer (
 
 void scene_graphics::update_command_buffers ()
 {
+    VkClearValue clear_value = VkClearValue{ VkClearColorValue {1.f, 0.f, 0.f, 1.f} };
+    
     VkRenderPassBeginInfo render_pass_begin_info {
         VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
         nullptr,
         render_pass.render_pass,
         VK_NULL_HANDLE,
         { {0,0}, common_graphics_obj->surface.capabilities.currentExtent },
-        0,
-        nullptr
+        1,
+        &clear_value
     };
 
     uint32_t index_counter = 0;
@@ -598,7 +600,7 @@ void scene_graphics::submit_present () const
         std::vector<uint32_t> {image_index},
         std::vector<VkResult> {}
     );
-
+    
     common_graphics_obj->graphics_device.wait_for_fences (
         std::vector<VkFence> {swapchain_fences.at (image_index).fence},
         VK_TRUE,
@@ -608,4 +610,6 @@ void scene_graphics::submit_present () const
     common_graphics_obj->graphics_device.reset_fences (
         std::vector<VkFence> {swapchain_fences.at (image_index).fence}
     );
+
+    printf ("image_index %d\n", image_index);
 }
