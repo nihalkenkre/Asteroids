@@ -196,10 +196,10 @@ void vk_image::change_layout (
     vk_semaphore sem (device);
 
     vk_queue src_submit_queue (device, src_queue);
-    src_submit_queue.submit ({}, 0, std::vector<VkCommandBuffer>{ src_cmd_buffer.command_buffer }, { sem.semaphore });
+    src_submit_queue.submit ({}, 0, std::vector<VkCommandBuffer>{ src_cmd_buffer.command_buffer }, { sem.semaphore }, VK_NULL_HANDLE);
     
     vk_queue dst_submit_queue (device, dst_queue);
-    dst_submit_queue.submit ({ sem.semaphore }, dst_pipeline_stage, std::vector<VkCommandBuffer>{ dst_cmd_buffer.command_buffer }, {});
+    dst_submit_queue.submit ({ sem.semaphore }, dst_pipeline_stage, std::vector<VkCommandBuffer>{ dst_cmd_buffer.command_buffer }, {}, VK_NULL_HANDLE);
 
     vkQueueWaitIdle (src_queue);
     vkQueueWaitIdle (dst_queue);

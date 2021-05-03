@@ -1176,6 +1176,11 @@ AGE_RESULT graphics_update_command_buffers (
 		nullptr
 	};
 
+	VkDeviceSize vertex_index_buffer_offsets[3] = {
+		0, 
+		(VkDeviceSize) actor_positions_size,
+		(VkDeviceSize) actor_positions_size + (VkDeviceSize) actor_uvs_size
+	};
 
 	for (uint32_t i = 0; i < swapchain_image_count; ++i)
 	{
@@ -1192,11 +1197,6 @@ AGE_RESULT graphics_update_command_buffers (
 		}
 
 		render_pass_begin_info.framebuffer = swapchain_framebuffers[i];
-		VkDeviceSize vertex_index_buffer_offsets[3] = {
-			0, 
-			(VkDeviceSize) actor_positions_size,
-			(VkDeviceSize) actor_positions_size + (VkDeviceSize) actor_uvs_size
-		};
 
 		vkCmdBeginRenderPass (swapchain_command_buffers[i], &render_pass_begin_info,
 				VK_SUBPASS_CONTENTS_INLINE);

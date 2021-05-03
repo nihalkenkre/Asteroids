@@ -17,7 +17,14 @@ public:
         const std::vector<VkSemaphore>& wait_semaphores,
         const VkPipelineStageFlags& wait_dst_stage_mask,
         const std::vector<VkCommandBuffer>& commands_buffers, 
-        const std::vector<VkSemaphore>& signal_semaphores) const;
+        const std::vector<VkSemaphore>& signal_semaphores,
+        const VkFence& fence) const;
+
+    void present (
+        const std::vector<VkSemaphore>& signal_semaphores,
+        const std::vector<VkSwapchainKHR>& swapchains,
+        const std::vector<uint32_t>& image_indices,
+        std::vector<VkResult>& results) const;
 
     VkQueue queue;
 

@@ -32,4 +32,5 @@ void scene::update (uint32_t delta_msecs)
 
 void scene::submit_present ()
 {
+    scene_graphics_obj.submit_present ();
 }

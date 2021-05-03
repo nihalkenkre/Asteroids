@@ -57,3 +57,50 @@ vk_graphics_device::~vk_graphics_device () noexcept
         vkDestroyDevice (graphics_device, nullptr);
     }
 }
+
+uint32_t vk_graphics_device::acquire_next_swapchain_image_index (
+    const VkSwapchainKHR& swapchain,
+    const VkSemaphore& wait_semaphore,
+    const VkFence& fence,
+    const uint64_t& timeout) const
+{
+    uint32_t image_index = 0;
+
+    VkResult result = vkAcquireNextImageKHR (graphics_device, swapchain, timeout, wait_semaphore, fence, &image_index);
+    if (result != VK_SUCCESS &&
+        result != VK_SUBOPTIMAL_KHR &&
+        result != VK_ERROR_OUT_OF_DATE_KHR &&
+        result != VK_TIMEOUT &&
+        result != VK_NOT_READY)
+    {
+        throw AGE_RESULT::ERROR_GRAPHICS_ACQUIRE_NEXT_IMAGE;
+    }
+
+    return image_index;
+}
+
+void vk_graphics_device::wait_for_fences (const std::vector<VkFence>& fences, const VkBool32& wait_all, const uint64_t& timeout) const
+{
+    VkResult result = vkWaitForFences (
+        graphics_device,
+        static_cast<uint32_t> (fences.size ()),
+        fences.data (),
+        wait_all,
+        timeout
+    );
+
+    if (result != VK_SUCCESS)
+    {
+        throw AGE_RESULT::ERROR_GRAPHICS_WAIT_FOR_FENCES;
+    }
+}
+
+void vk_graphics_device::reset_fences (const std::vector<VkFence>& fences) const
+{
+    VkResult result = vkResetFences (graphics_device, static_cast<uint32_t> (fences.size ()), fences.data ());
+
+    if (result != VK_SUCCESS)
+    {
+        throw AGE_RESULT::ERROR_GRAPHICS_RESET_FENCES;
+    }
+}

@@ -57,6 +57,16 @@ vk_command_buffer::~vk_command_buffer () noexcept
     }
 }
 
+void vk_command_buffer::reset (const VkCommandBufferResetFlags& flags) const
+{
+    VkResult result = vkResetCommandBuffer (command_buffer, flags);
+
+    if (result != VK_SUCCESS)
+    {
+        throw AGE_RESULT::ERROR_GRAPHICS_RESET_COMMAND_BUFFER;
+    }
+}
+
 void vk_command_buffer::begin (const VkCommandBufferUsageFlags& flags) const
 {
     VkCommandBufferBeginInfo begin_info = {
@@ -71,6 +81,18 @@ void vk_command_buffer::begin (const VkCommandBufferUsageFlags& flags) const
     {
         throw AGE_RESULT::ERROR_GRAPHICS_BEGIN_COMMAND_BUFFER;
     }
+}
+
+void vk_command_buffer::begin_render_pass (
+    const VkRenderPassBeginInfo& begin_info, 
+    const VkSubpassContents& subpass_contents) const
+{
+    vkCmdBeginRenderPass (command_buffer, &begin_info, subpass_contents);
+}
+
+void vk_command_buffer::end_render_pass () const
+{
+    vkCmdEndRenderPass (command_buffer);
 }
 
 void vk_command_buffer::end () const
@@ -132,6 +154,14 @@ vk_command_buffers::~vk_command_buffers () noexcept
     printf ("vk_command_buffers::~vk_command_buffers\n");
 
     command_buffers.clear ();
+}
+
+void vk_command_buffers::reset (const VkCommandBufferResetFlags& flags) const
+{
+    for (const auto& command_buffer : command_buffers)
+    {
+        command_buffer.reset (flags);
+    }
 }
 
 void vk_command_buffers::begin (const VkCommandBufferUsageFlags& flags) const

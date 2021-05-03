@@ -19,6 +19,23 @@ public:
 
     ~vk_graphics_device () noexcept;
 
+    uint32_t acquire_next_swapchain_image_index (
+        const VkSwapchainKHR& swapchain,
+        const VkSemaphore& wait_semaphore,
+        const VkFence& fence,
+        const uint64_t& timeout
+    ) const;
+
+    void wait_for_fences (
+        const std::vector<VkFence>& fences,
+        const VkBool32& wait_all,
+        const uint64_t& timeout
+    ) const;
+
+    void reset_fences (
+        const std::vector<VkFence>& fences
+    ) const;
+
     VkDevice graphics_device;
 };
 

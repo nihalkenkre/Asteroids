@@ -3,6 +3,7 @@
 #include "error.hpp"
 #include "actor_vert.hpp"
 #include "actor_frag.hpp"
+#include "vk_objects/vk_queue.hpp"
 
 #include <cstdio>
 
@@ -20,6 +21,8 @@ scene_graphics::scene_graphics (const common_graphics* common_graphics_obj) : co
     create_graphics_pipeline ();
     create_swapchain_command_buffers ();
     create_swapchain_semaphores_fences ();
+
+    update_command_buffers ();
 }
 
 void scene_graphics::create_geometry_buffers ()
@@ -454,11 +457,11 @@ void scene_graphics::create_swapchain_render_pass ()
 
 void scene_graphics::create_swapchain_framebuffers ()
 {
-    framebuffers.reserve (common_graphics_obj->swapchain_image_views.size ());
+    swapchain_framebuffers.reserve (common_graphics_obj->swapchain_image_views.size ());
 
     for (const auto& iv : common_graphics_obj->swapchain_image_views)
     {
-        framebuffers.emplace_back (
+        swapchain_framebuffers.emplace_back (
             vk_framebuffer (
                 common_graphics_obj->graphics_device.graphics_device,
                 render_pass.render_pass,
@@ -527,7 +530,82 @@ void scene_graphics::create_swapchain_semaphores_fences ()
     }
 }
 
-void scene_graphics::create_transforms_buffer (const uint32_t large_asteroids_current_max_count, const uint32_t small_asteroids_current_max_count, const uint32_t bullet_current_max_count)
+void scene_graphics::create_transforms_buffer (
+    const uint32_t large_asteroids_current_max_count, 
+    const uint32_t small_asteroids_current_max_count, 
+    const uint32_t bullet_current_max_count)
 {
 
+}
+
+void scene_graphics::update_command_buffers ()
+{
+    VkRenderPassBeginInfo render_pass_begin_info {
+        VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+        nullptr,
+        render_pass.render_pass,
+        VK_NULL_HANDLE,
+        { {0,0}, common_graphics_obj->surface.capabilities.currentExtent },
+        0,
+        nullptr
+    };
+
+    uint32_t index_counter = 0;
+
+    for (const auto &cb : swapchain_command_buffers.command_buffers)
+    {
+        cb.reset (VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
+        cb.begin (0);
+
+        render_pass_begin_info.framebuffer = swapchain_framebuffers.at (index_counter).framebuffer;
+
+        cb.begin_render_pass (render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
+        cb.end_render_pass ();
+
+        cb.end ();
+
+        ++index_counter;
+    }
+}
+
+void scene_graphics::submit_present () const
+{
+    uint32_t image_index = common_graphics_obj->graphics_device.acquire_next_swapchain_image_index (
+        common_graphics_obj->swapchain.swapchain,
+        swapchain_wait_semaphore.semaphore,
+        VK_NULL_HANDLE,
+        UINT64_MAX
+    );
+
+    VkPipelineStageFlags wait_stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
+    vk_queue queue (
+        common_graphics_obj->graphics_device.graphics_device,
+        common_graphics_obj->graphics_queue
+    );
+
+    queue.submit (
+        std::vector<VkSemaphore> {swapchain_wait_semaphore.semaphore},
+        wait_stage_mask,
+        std::vector<VkCommandBuffer> {swapchain_command_buffers.command_buffers.at (image_index).command_buffer},
+        std::vector<VkSemaphore> {swapchain_signal_semaphores.at (image_index).semaphore},
+        swapchain_fences.at (image_index).fence
+    );
+
+    queue.present (
+        std::vector<VkSemaphore> {swapchain_signal_semaphores.at (image_index).semaphore},
+        std::vector<VkSwapchainKHR> {common_graphics_obj->swapchain.swapchain},
+        std::vector<uint32_t> {image_index},
+        std::vector<VkResult> {}
+    );
+
+    common_graphics_obj->graphics_device.wait_for_fences (
+        std::vector<VkFence> {swapchain_fences.at (image_index).fence},
+        VK_TRUE,
+        UINT64_MAX
+    );
+
+    common_graphics_obj->graphics_device.reset_fences (
+        std::vector<VkFence> {swapchain_fences.at (image_index).fence}
+    );
 }

@@ -26,9 +26,9 @@ public:
     scene_graphics () {}
     scene_graphics (const common_graphics* common_graphics_obj);
 
+    void submit_present () const;
 
 private:
-
     void create_geometry_buffers ();
     void create_image_buffers ();
     void create_graphics_pipeline ();
@@ -43,6 +43,8 @@ private:
         const uint32_t small_asteroids_current_max_count,
         const uint32_t bullet_current_max_count
     );
+
+    void update_command_buffers ();
 
     const common_graphics* common_graphics_obj;
 
@@ -73,7 +75,7 @@ private:
     vk_descriptor_set texture_descriptor_set;
 
     vk_render_pass render_pass;
-    std::vector<vk_framebuffer> framebuffers;
+    std::vector<vk_framebuffer> swapchain_framebuffers;
 
     vk_shader_module vertex_shader_module;
     vk_shader_module fragment_shader_module;

@@ -23,7 +23,16 @@ public:
 
     VkCommandBuffer command_buffer;
 
+    void reset (const VkCommandBufferResetFlags& flags) const;
     void begin (const VkCommandBufferUsageFlags& flags) const;
+
+    void begin_render_pass (
+        const VkRenderPassBeginInfo& begin_info, 
+        const VkSubpassContents& subpass_contents
+    ) const;
+
+    void end_render_pass () const;
+
     void end () const;
 
 private:
@@ -50,6 +59,7 @@ public:
 
     ~vk_command_buffers () noexcept;
 
+    void reset (const VkCommandBufferResetFlags& flags) const;
     void begin (const VkCommandBufferUsageFlags& flags) const;
     void end () const;
 
