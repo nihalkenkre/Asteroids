@@ -610,6 +610,4 @@ void scene_graphics::submit_present () const
     common_graphics_obj->graphics_device.reset_fences (
         std::vector<VkFence> {swapchain_fences.at (image_index).fence}
     );
-
-    printf ("image_index %d\n", image_index);
 }

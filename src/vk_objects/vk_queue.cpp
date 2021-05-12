@@ -70,4 +70,11 @@ void vk_queue::present (
         image_indices.data (),
         results.data ()
     };
+
+    VkResult result = vkQueuePresentKHR (queue, &present_info);
+
+    if (result != VK_SUCCESS)
+    {
+        throw AGE_RESULT::ERROR_GRAPHICS_QUEUE_PRESENT;
+    }
 }

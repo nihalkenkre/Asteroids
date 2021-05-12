@@ -68,10 +68,10 @@ uint32_t vk_graphics_device::acquire_next_swapchain_image_index (
 
     VkResult result = vkAcquireNextImageKHR (graphics_device, swapchain, timeout, wait_semaphore, fence, &image_index);
 
-    if (result != VK_SUCCESS &&
+    if (result != VK_SUCCESS /*&&
         result != VK_SUBOPTIMAL_KHR &&
         result != VK_TIMEOUT &&
-        result != VK_NOT_READY)
+        result != VK_NOT_READY*/)
     {
         throw AGE_RESULT::ERROR_GRAPHICS_ACQUIRE_NEXT_IMAGE;
     }
