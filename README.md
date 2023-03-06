@@ -1,5 +1,5 @@
 # Asteroids
-Vulkan based version of Asteroids.
+Vulkan based version of Asteroids, maximizing performance by using Data Oriented Design.
 
 Current status
 
